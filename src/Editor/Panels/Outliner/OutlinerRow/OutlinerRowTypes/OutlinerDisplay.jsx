@@ -18,6 +18,7 @@
  */
 
 import React, { Component } from 'react';
+import { withTranslation } from 'react-i18next';
 
 import '../_outlinerrow.scss'
 
@@ -25,6 +26,7 @@ import OutlinerWidget from '../../OutlinerWidget/OutlinerWidget';
 
 class OutlinerDisplay extends Component {
   render() {
+    const { t } = this.props;
     const items = {path: "path-object",
       button: "button-object",
       clip: "clip-object",
@@ -42,7 +44,10 @@ class OutlinerDisplay extends Component {
           {Object.keys(items).map((item) => {
             return (
             <OutlinerWidget
-              tooltip={(this.props.display[item] ? "Hide " : "Show ") + item.charAt(0).toUpperCase() + item.slice(1) + " Objects"}
+              tooltip={t(
+                this.props.display[item] ? 'outliner.widgets.hideObjects' : 'outliner.widgets.showObjects',
+                { type: t('outliner.objectTypes.' + item) }
+              )}
               key={item}
               onClick={() => {
                 var newDisplay = {...this.props.display};
@@ -59,7 +64,7 @@ class OutlinerDisplay extends Component {
   }
 }
 
-export default OutlinerDisplay
+export default withTranslation()(OutlinerDisplay)
 /*
 renderDisplay = () => {
   

@@ -1,30 +1,43 @@
 import React, { useState, useEffect } from 'react';
-
 let classNames = require('classnames');
 
 /**
- * A delayed text input object that will not the provided on change unless the value is valid, and 
- * passes a provided isValid function.
- * 
- * @param {Object} props 
- * * @param {function} isValid - returns true if the value provided is acceptable, false otherwise. If no isValid function is provided, 
- * * @param {RegExp} isValidRegex - a regular expression to check against for validity.
- * * @param {function} cleanUp - Valid values will be passed to this function prior to being displayed, and sent to the onChange function.
+ * Helper function to safely convert a value to a string for the input field.
+ * Prevents React warnings when receiving NaN, null, or undefined.
  */
+function safeString(val) {
+    if (val === undefined || val === null) return '';
+    if (typeof val === 'number' && isNaN(val)) return '';
+    return String(val);
+}
 
+/**
+A delayed text input object that will not the provided on change unless the value is valid, and
+passes a provided isValid function.
+@param {Object} props
+@param {function} isValid - returns true if the value provided is acceptable, false otherwise. If no isValid function is provided,
+@param {RegExp} isValidRegex - a regular expression to check against for validity.
+@param {function} cleanUp - Valid values will be passed to this function prior to being displayed, and sent to the onChange function.
+*/
 export default function WickTextInput (props) {
-
-    const [displayValue, setDisplayValue] = useState(props.value);
+    const [displayValue, setDisplayValue] = useState(safeString(props.value));
     const [valueIsValid, setValueIsValid] = useState(true);
-
     let { isValid, cleanUp, isValidRegex, ...rest } = props;
 
     // Update the display value if it's updated elsewhere.
     useEffect(() => {
         let val = props.value;
-        if (fullIsValid(val)) { val = internalCleanup(val) }
-
-        setDisplayValue(val);
+        if (fullIsValid(val)) { 
+            val = internalCleanup(val);
+        }
+        // Use safeString to prevent NaN from reaching the <input> value attribute
+        setDisplayValue(safeString(val));
+        
+        // Sync validity state if the external prop changes to an invalid state
+        if (!fullIsValid(props.value)) {
+            setValueIsValid(false);
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.value])
 
     function wrappedOnChange (val) {
@@ -43,18 +56,14 @@ export default function WickTextInput (props) {
      * If no validity methods have been passed to this object, returns true;
      */
     function fullIsValid (val) {
-
         // Default to true;
         let valid = true;
-
         if (isValid) {
             valid = valid && isValid(val);
         } 
-
         if (isValidRegex) {
-            valid = valid && val.matches(isValidRegex);
+            valid = valid && isValidRegex.test(val);
         }
-
         return valid;
     }
 
@@ -65,15 +74,13 @@ export default function WickTextInput (props) {
      */
     function internalOnChange (e) {
         const val = e.target.value;
-        
         let cleanVal = internalCleanup(val);
-
         if (fullIsValid(val)) {
             setValueIsValid(true);
             wrappedOnChange(cleanVal);
-            setDisplayValue(cleanVal.toString());
+            setDisplayValue(safeString(cleanVal));
         } else {
-            setDisplayValue(cleanVal);
+            setDisplayValue(safeString(cleanVal));
             setValueIsValid(false);
         }
     }

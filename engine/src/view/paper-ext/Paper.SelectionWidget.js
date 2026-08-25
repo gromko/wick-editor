@@ -155,7 +155,7 @@ class SelectionWidget {
     }
 
     set currentTransformation (currentTransformation) {
-        if(['translate', 'scale', 'rotate'].indexOf(currentTransformation) === -1) {
+        if(['translate', 'scale', 'rotate', 'skew'].indexOf(currentTransformation) === -1) {
             console.error('Paper.SelectionWidget: Invalid transformation type: ' + currentTransformation);
             currentTransformation = null;
         } else {
@@ -209,12 +209,15 @@ class SelectionWidget {
             this.currentTransformation = 'rotate';
         } else if (item.data.handleType === 'scale') {
             this.currentTransformation = 'scale';
+        } else if (item.data.handleType === 'skew') {
+            this.currentTransformation = 'skew';
         } else {
             this.currentTransformation = 'translate';
         }
 
         this._ghost.data.initialPosition = this._ghost.position;
         this._ghost.data.scale = new paper.Point(1,1);
+        this._ghost.data.shear = new paper.Point(0,0);
     }
 
     /**
@@ -261,6 +264,36 @@ class SelectionWidget {
             var rotation = pivotToCurrentPointAngle - pivotToLastPointAngle;
             this._ghost.rotate(rotation, this.pivot);
             this.boxRotation += rotation;
+        } else if (this.currentTransformation === 'skew') {
+            // Work in box-local (unrotated) space, same trick used for scaling.
+            var lastPoint = e.point.subtract(e.delta);
+            var currentPoint = e.point;
+            lastPoint = lastPoint.rotate(-this.boxRotation, this.pivot);
+            currentPoint = currentPoint.rotate(-this.boxRotation, this.pivot);
+            var deltaLocal = currentPoint.subtract(lastPoint);
+
+            var edge = item.data.handleEdge; // 'top' | 'bottom' | 'left' | 'right'
+            var boxHeight = this.boundingBox.height || 1;
+            var boxWidth = this.boundingBox.width || 1;
+
+            if (edge === 'top' || edge === 'bottom') {
+                // Dragging the top/bottom edge handle sideways shears
+                // horizontally - normalize by box height so a drag of
+                // roughly the box's own height feels like a full 45°ish skew.
+                var dShearX = deltaLocal.x / boxHeight;
+                if (edge === 'top') dShearX = -dShearX;
+                this._ghost.data.shear = this._ghost.data.shear.add(new paper.Point(dShearX, 0));
+            } else if (edge === 'left' || edge === 'right') {
+                // Dragging the left/right edge handle up/down shears vertically.
+                var dShearY = deltaLocal.y / boxWidth;
+                if (edge === 'left') dShearY = -dShearY;
+                this._ghost.data.shear = this._ghost.data.shear.add(new paper.Point(0, dShearY));
+            }
+
+            this._ghost.matrix = new paper.Matrix();
+            this._ghost.rotate(-this.boxRotation);
+            this._ghost.shear(this._ghost.data.shear.x, this._ghost.data.shear.y, this.pivot);
+            this._ghost.rotate(this.boxRotation);
         }
     }
 
@@ -279,6 +312,8 @@ class SelectionWidget {
             this.scaleSelection(this._ghost.data.scale);
         } else if(this.currentTransformation === 'rotate') {
             this.rotateSelection(this._ghost.rotation);
+        } else if(this.currentTransformation === 'skew') {
+            this.skewSelection(this._ghost.data.shear);
         }
 
         this._currentTransformation = null;
@@ -314,6 +349,81 @@ class SelectionWidget {
         });
     }
 
+    /**
+     * Skews (shears) the selected items, turning their bounding rectangle
+     * into a parallelogram.
+     * @param {paper.Point} shear - the x/y shear amounts to apply.
+     */
+skewSelection (shear) {
+    this._itemsInSelection.forEach(item => {
+        var wickObject = Wick.ObjectCache.getObjectByUUID(item.data.wickUUID);
+
+        if (wickObject && wickObject.transformation) {
+            // Об'єкти з власною моделлю transformation (Wick.Clip, у тому
+            // числі SVG, загорнуті в Clip - див. SVGAsset._wrapLeafItemInClip)
+            // керуються ЦІЛКОМ через цю модель: View.Clip.render()
+            // перебудовує matrix з нуля при КОЖНОМУ рендері (а рендер в
+            // редакторі відбувається постійно). Пряму трансформацію живого
+            // paper.js-об'єкта тут НЕ застосовуємо - вона однаково буде
+            // відкинута найближчим render().
+            //
+            // (Раніше тут була спроба відрізнити "SVG-кліп" через
+            // wickObject.objects.length і пропустити render() для нього -
+            // Wick.Clip.objects взагалі не існує як властивість, тож це
+            // завжди падало з "Cannot read properties of undefined
+            // (reading 'length')". Реальна причина спотворення була не
+            // тут, а в View.Clip.render()/generateBorder(): shear()
+            // застосовувався ДО rotation, а group.rotation = X декомпозує
+            // поточну матрицю для обчислення дельти обертання, що paper.js
+            // сам вважає ненадійним/неможливим, якщо в матриці вже є shear
+            // - це й давало видиме "розтягування". Тепер, коли render()
+            // застосовує shear ОСТАННІМ (після rotation), його можна
+            // викликати завжди.)
+            var oldPos = new paper.Point(
+                wickObject.transformation.x,
+                wickObject.transformation.y
+            );
+
+            // Рахуємо, як саме зсув навколо pivot/boxRotation віджета
+            // виділення (rotate -> shear -> rotate, точно та сама операція,
+            // що й нижче в гілці для Path) впливає на точку прив'язки (x,y)
+            // моделі, і застосовуємо цю ж геометричну операцію до самої
+            // точки позиції, щоб pivot скосу візуально лишився на місці.
+            var rotated = oldPos.rotate(-this.boxRotation, this.pivot);
+            var relative = rotated.subtract(this.pivot);
+            // Той самий 2-параметричний зсув, що й paper.js Item#shear(shx, shy):
+            // x' = x + shx*y, y' = y + shy*x
+            var sheared = new paper.Point(
+                relative.x + shear.x * relative.y,
+                relative.y + shear.y * relative.x
+            ).add(this.pivot);
+            var newPos = sheared.rotate(this.boxRotation, this.pivot);
+
+            wickObject.transformation.x = newPos.x;
+            wickObject.transformation.y = newPos.y;
+            wickObject.transformation.skewX += shear.x;
+            wickObject.transformation.skewY += shear.y;
+
+            // ПРИМІТКА: корекція позиції вище точна, коли boxRotation === 0
+            // (найпоширеніший випадок - об'єкт ще не обертали). Якщо об'єкт
+            // одночасно й обертається, й скошується, адитивне накопичення
+            // skewX/skewY - лише наближення.
+
+            if (wickObject.view && wickObject.view.render) {
+                wickObject.view.render();
+            }
+        } else {
+            // Голі Path (і будь-що без власної моделі transformation) не
+            // мають render(), який перебудовує matrix з моделі - для них
+            // пряма трансформація живого paper.js-об'єкта є єдиним і
+            // остаточним способом застосувати скіс.
+            item.rotate(-this.boxRotation, this.pivot);
+            item.shear(shear.x, shear.y, this.pivot);
+            item.rotate(this.boxRotation, this.pivot);
+        }
+    });
+}
+
     _buildGUI () {
         this.item.addChild(this._buildBorder());
 
@@ -336,6 +446,11 @@ class SelectionWidget {
         guiElements.push(this._buildScalingHandle('bottomCenter'));
         guiElements.push(this._buildScalingHandle('leftCenter'));
         guiElements.push(this._buildScalingHandle('rightCenter'));
+
+        guiElements.push(this._buildSkewHandle('top'));
+        guiElements.push(this._buildSkewHandle('bottom'));
+        guiElements.push(this._buildSkewHandle('left'));
+        guiElements.push(this._buildSkewHandle('right'));
 
         this.item.addChildren(guiElements);
 
@@ -387,6 +502,49 @@ class SelectionWidget {
             fillColor: SelectionWidget.HANDLE_FILL_COLOR,
             strokeColor: SelectionWidget.HANDLE_STROKE_COLOR,
         });
+        return handle;
+    }
+
+    _buildSkewHandle (edge) {
+        // edge is 'top' | 'bottom' | 'left' | 'right'. Positioned just
+        // outside the midpoint of that edge (offset along the edge's
+        // normal) so it doesn't overlap the scaling handle already sitting
+        // right on the edge midpoint.
+        var edgeCenterName = edge + 'Center'; // topCenter, bottomCenter, leftCenter, rightCenter
+        var basePoint = this.boundingBox[edgeCenterName];
+        var offset = SelectionWidget.SKEW_HANDLE_OFFSET / paper.view.zoom;
+
+        var offsetVector;
+        if (edge === 'top') {
+            offsetVector = new paper.Point(0, -offset);
+        } else if (edge === 'bottom') {
+            offsetVector = new paper.Point(0, offset);
+        } else if (edge === 'left') {
+            offsetVector = new paper.Point(-offset, 0);
+        } else {
+            offsetVector = new paper.Point(offset, 0);
+        }
+
+        var center = basePoint.add(offsetVector);
+
+        var r = (SelectionWidget.HANDLE_RADIUS / paper.view.zoom) * 1.4;
+        var handle = new paper.Path.Rectangle({
+            center: center,
+            size: [r, r],
+            strokeWidth: SelectionWidget.HANDLE_STROKE_WIDTH / paper.view.zoom,
+            strokeColor: SelectionWidget.HANDLE_STROKE_COLOR,
+            fillColor: SelectionWidget.HANDLE_FILL_COLOR,
+            insert: false,
+        });
+        // Rotate into a diamond so it reads visually distinct from the
+        // round scaling handles and the pie-shaped rotation hotspots.
+        handle.rotate(45);
+        handle.applyMatrix = false;
+
+        handle.data.isSelectionBoxGUI = true;
+        handle.data.handleType = 'skew';
+        handle.data.handleEdge = edge;
+
         return handle;
     }
 
@@ -540,6 +698,7 @@ SelectionWidget.PIVOT_STROKE_COLOR = 'rgba(0,0,0,1)';
 SelectionWidget.PIVOT_RADIUS = SelectionWidget.HANDLE_RADIUS
 SelectionWidget.ROTATION_HOTSPOT_RADIUS = 20;
 SelectionWidget.ROTATION_HOTSPOT_FILLCOLOR = 'rgba(100,150,255,0.5)';
+SelectionWidget.SKEW_HANDLE_OFFSET = 16;
 SelectionWidget.GHOST_STROKE_COLOR = 'rgba(0, 0, 0, 1.0)';
 SelectionWidget.GHOST_STROKE_WIDTH = 1;
 

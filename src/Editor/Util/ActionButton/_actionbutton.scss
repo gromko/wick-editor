@@ -26,6 +26,7 @@ $action-button-transition-duration: .2s;
   height: 100%;
   touch-action: manipulation;
   user-select: none;
+  text-wrap-mode: nowrap;
 }
 
 .action-button-single-icon {
@@ -66,6 +67,7 @@ $action-button-transition-duration: .2s;
   align-items: center;
   justify-content: center;
   max-height: 100%;
+  
 }
 
 .action-button-text-icon.mobile-asset-library-icon {
@@ -279,7 +281,7 @@ body.hasHover .action-button-tool:hover {
   -webkit-transition-duration: $action-button-transition-duration; /* Safari */
   transition-duration: $action-button-transition-duration;
 
-  background-color: $editor-primary;
+  background-color: $menubar-button-bg;
   color: $editor-menubar-option-text;
 }
 
@@ -303,7 +305,7 @@ body.hasHover .action-button-menu:hover {
   -webkit-transition-duration: $action-button-transition-duration; /* Safari */
   transition-duration: $action-button-transition-duration;
 
-  background-color: $editor-primary;
+  background-color: $menubar-button-bg;
   color: $wick-green;
   border: 1.5px solid $wick-green;
 
@@ -596,7 +598,7 @@ body.hasHover .action-button-flame:hover {
   transition-duration: $action-button-transition-duration;
 
   background-color: transparent;
-  border: 2px solid $patreon-orange;
+  //border: 2px solid $patreon-orange;
   color: #e0e0e0;
 
   padding: 2px 6px 2px 6px;
@@ -611,8 +613,9 @@ body.hasHover .action-button-flame:hover {
 }
 
 .action-button-support img{
-  width: 18px;
-  height: auto;
+  width: auto;
+  height: 100%;
+  max-height: 28px;
   order: 1;
 }
 

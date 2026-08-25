@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { withTranslation } from 'react-i18next';
 
 import ActionButton from 'Editor/Util/ActionButton/ActionButton';
 import PlayButton from 'Editor/Util/PlayButton/PlayButton';
@@ -33,12 +34,13 @@ class CanvasTransforms extends Component {
   }
 
   renderTransformations = () => {
+    const { t } = this.props;
     return (
       <div className='transforms-container'>
         {this.renderTransformButton({
           action:this.props.toggleOnionSkin,
           name:'onionskinning',
-          tooltip:'Onion Skinning',
+          tooltip:t('canvasTransforms.onionSkinning'),
           className:'canvas-transform-item onion-skin-button',
           isActive:(() => {return this.props.onionSkinEnabled}),
           tooltipHotkey: 'toggle-onion-skinning'
@@ -46,7 +48,7 @@ class CanvasTransforms extends Component {
         {this.renderTransformButton({
           action: (() => this.props.setActiveTool('pan')),
           name: 'pan',
-          tooltip: 'Pan',
+          tooltip: t('canvasTransforms.pan'),
           className:'canvas-transform-item',
           tooltipHotkey: 'activate-pan'
         })}
@@ -56,7 +58,7 @@ class CanvasTransforms extends Component {
         {this.renderTransformButton({
           action: (this.props.recenterCanvas),
           name: 'recenter',
-          tooltip: 'Recenter',
+          tooltip: t('canvasTransforms.recenter'),
           className:'canvas-transform-item'
         })}
       </div>
@@ -115,13 +117,14 @@ class CanvasTransforms extends Component {
   // }
 
   renderZoomTool = () => {
+    const { t } = this.props;
     return (
       <div id='zoom-tool-container'>
         {/* Zoom Tool / NumericInput*/}
         {this.renderTransformButton({
           action: (() => this.props.setActiveTool('zoom')),
           name: 'zoom',
-          tooltip: 'Zoom',
+          tooltip: t('canvasTransforms.zoom'),
           className: 'zoom-tool',
           tooltipHotkey: 'activate-zoom'
         })}
@@ -130,23 +133,26 @@ class CanvasTransforms extends Component {
   }
 
   renderZoomIn = () => {
+    const { t } = this.props;
     return this.renderTransformButton({
           action: () => this.props.zoomIn(),
           name: 'zoomin',
-          tooltip: 'Zoom In',
+          tooltip: t('canvasTransforms.zoomIn'),
           className: 'thin-transform-button zoom-in-button'});
   }
 
   renderZoomOut = () => {
+    const { t } = this.props;
     return this.renderTransformButton({
         action: () => this.props.zoomOut(),
         name: 'zoomout',
-        tooltip: 'Zoom Out',
+        tooltip: t('canvasTransforms.zoomOut'),
         className: 'thin-transform-button zoom-out-button',
       });
   }
 
   renderPlayButtonTooltip = () => {
+    const { t } = this.props;
     return (
       <ReactTooltip
         disable={isMobile}
@@ -156,7 +162,7 @@ class CanvasTransforms extends Component {
         effect='solid'
         aria-haspopup='true'
         className="wick-tooltip">
-        <span>{`Preview Play (${this.getHotkey('preview-play-toggle').toUpperCase()})`}</span>
+        <span>{t('canvasTransforms.previewPlay', { hotkey: this.getHotkey('preview-play-toggle').toUpperCase() })}</span>
       </ReactTooltip>
     )
   }
@@ -178,4 +184,4 @@ class CanvasTransforms extends Component {
   }
 }
 
-export default CanvasTransforms
+export default withTranslation()(CanvasTransforms)

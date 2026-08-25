@@ -21,8 +21,8 @@
 
 
 .autosave-modal-body {
-  width: 240px;
-  min-width: 240px;  
+  width: 340px;
+  min-width: 340px;  
   height: 200px;
   padding: 20px; 
 }
@@ -52,7 +52,7 @@
 }
 
 #autosave-modal-footer {
-  width: 100%; 
+  width: fit-content; 
   height: 40px;
   margin-top: 15px;
   display: flex;
@@ -62,12 +62,12 @@
 }
 
 #autosave-modal-cancel {
-  width: 90px; 
+  width: 120px; 
   height: 100%; 
 }
 
 #autosave-modal-accept {
-  width: 90px;
+
   height: 100%;
   margin-left: 18px;
 } 

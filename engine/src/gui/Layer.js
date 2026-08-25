@@ -26,8 +26,8 @@ Wick.GUIElement.Layer = class extends Wick.GUIElement {
         this.canAutoScrollY = true;
 
         this.hideButton = new Wick.GUIElement.LayerButton(model, {
-            toggledTooltip: 'Show Layer',
-            untoggledTooltip: 'Hide Layer',
+            toggledTooltip: 'layer.show_layer',
+            untoggledTooltip: 'layer.hide_layer',
             toggledIcon: 'show_layer',
             untoggledIcon: 'hide_layer',
             isToggledFn: () => {
@@ -41,8 +41,8 @@ Wick.GUIElement.Layer = class extends Wick.GUIElement {
         });
 
         this.lockButton = new Wick.GUIElement.LayerButton(model, {
-            toggledTooltip: 'Unlock Layer',
-            untoggledTooltip: 'Lock Layer',
+            toggledTooltip: 'layer.unlock_layer',
+            untoggledTooltip: 'layer.lock_layer',
             toggledIcon: 'unlock_layer',
             untoggledIcon: 'lock_layer',
             isToggledFn: () => {
@@ -110,7 +110,7 @@ Wick.GUIElement.Layer = class extends Wick.GUIElement {
         ctx.fillStyle = this.model.isActive
           ? Wick.GUIElement.LAYER_LABEL_ACTIVE_FONT_COLOR
           : Wick.GUIElement.LAYER_LABEL_INACTIVE_FONT_COLOR;
-        ctx.fillText(this.model.name, 57, this.gridCellHeight / 2 + 6);
+        ctx.fillText(this._displayName(), 57, this.gridCellHeight / 2 + 6);
         ctx.restore();
 
         // Buttons
@@ -135,6 +135,29 @@ Wick.GUIElement.Layer = class extends Wick.GUIElement {
                 ctx.stroke();
             ctx.restore();
         }
+    }
+
+    /**
+     * Layer names default to "Layer" or "Layer N" (see Wick.Timeline.addLayer),
+     * a hardcoded English string stored directly in the model, since that
+     * value can end up in the saved .wick file and must stay stable across
+     * languages. Translate it for display only when it still matches that
+     * exact auto-generated pattern; leave any name the user typed in alone.
+     * @returns {string} The name to draw for this layer.
+     */
+    _displayName () {
+        var name = this.model.name;
+
+        if (name === 'Layer') {
+            return Wick.GUIElement.Locale.t('layer.default_name');
+        }
+
+        var match = /^Layer (\d+)$/.exec(name);
+        if (match) {
+            return Wick.GUIElement.Locale.t('layer.default_name') + ' ' + match[1];
+        }
+
+        return name;
     }
 
     get bounds () {

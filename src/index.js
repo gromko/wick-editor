@@ -23,6 +23,39 @@ import './index.css';
 import Editor from './Editor/Editor';
 import * as serviceWorker from './serviceWorker';
 import initializeDefaultFileHandlers from './files/filehandler';
+//
+
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import en from './locales/en/translation.json';
+import uk from './locales/uk/translation.json';
+
+i18n
+  .use(initReactI18next)
+  .init({
+    resources: {
+      en: { translation: en },
+      uk: { translation: uk },
+    },
+    lng: 'uk', // мова за замовчуванням, можна брати з localStorage/навігатора
+    fallbackLng: 'en',
+    interpolation: { escapeValue: false },
+  });
+
+// Синхронізуємо мову канвас-елементів (Wick.GUIElement.*) з мовою React-інтерфейсу.
+// Wick.GUIElement.Locale — окрема, незалежна від i18next система локалізації
+// (canvas не має доступу до React-дерева/хуків), тому її мову треба виставляти вручну.
+if (window.Wick && window.Wick.GUIElement && window.Wick.GUIElement.Locale) {
+  window.Wick.GUIElement.Locale.setLanguage(i18n.language);
+}
+
+i18n.on('languageChanged', (lng) => {
+  if (window.Wick && window.Wick.GUIElement && window.Wick.GUIElement.Locale) {
+    window.Wick.GUIElement.Locale.setLanguage(lng);
+  }
+});
+
+export default i18n;
 
 // Creates file handlers in the window.
 initializeDefaultFileHandlers();

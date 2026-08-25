@@ -34,7 +34,16 @@ Wick.GUIElement.BreadcrumbsButton = class extends Wick.GUIElement.Button {
 
         // Button label settings
         ctx.font = "14px Nunito Sans";
-        var textContent = this.model.identifier || 'Clip';
+
+        // The root clip of the project always has identifier === 'Project'
+        // (see Wick.Project constructor), which is a hardcoded English label,
+        // not something the user can customize like a normal clip identifier.
+        // Translate it instead of showing it verbatim.
+        var isRoot = this.model === this.model.project.root;
+        var textContent = isRoot
+            ? Wick.GUIElement.Locale.t('breadcrumbsButton.project')
+            : (this.model.identifier || Wick.GUIElement.Locale.t('breadcrumbsButton.clip'));
+
         var textWidth = ctx.measureText(textContent).width;
         var textX = Wick.GUIElement.BREADCRUMBS_PADDING;
         var textY = Wick.GUIElement.BREADCRUMBS_HEIGHT/2 + Wick.GUIElement.BREADCRUMBS_PADDING;

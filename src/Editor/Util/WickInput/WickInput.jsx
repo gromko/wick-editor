@@ -60,7 +60,7 @@ class WickInput extends Component {
         <div
           data-tip
           data-for={tooltipID}
-          id={tooltipID}
+          //id={tooltipID}
           className={classNames("wick-input-container", this.props.containerclassname)}>
           {this.renderTooltip(tooltipID)}
           {this.renderContent()}

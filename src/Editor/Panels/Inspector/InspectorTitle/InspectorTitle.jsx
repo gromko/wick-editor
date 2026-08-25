@@ -18,6 +18,7 @@
  */
 
 import React, { Component } from 'react';
+import { withTranslation } from 'react-i18next';
 import './_inspectortitle.scss';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -31,13 +32,14 @@ class InspectorTitle extends Component {
     )
   }
   render() {
+    const { t } = this.props;
     return(
       <div className="inspector-title">
-        <div className="inspector-title-name">Inspector</div>
+        <div className="inspector-title-name">{t('inspector.title')}</div>
         {this.props.type && this.props.title && this.renderSelectionType()}
       </div>
     )
   }
 }
 
-export default InspectorTitle
+export default withTranslation()(InspectorTitle)

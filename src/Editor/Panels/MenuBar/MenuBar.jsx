@@ -18,6 +18,7 @@
  */
 
 import React, { Component } from 'react';
+import { withTranslation } from 'react-i18next';
 import './_menubar.scss';
 import MenuBarButton from './MenuBarButton/MenuBarButton';
 import MenuBarIconButton from './MenuBarIconButton/MenuBarIconButton';
@@ -26,21 +27,22 @@ import MenuBarSupportButton from './MenuBarSupportButton/MenuBarSupportButton';
 class MenuBar extends Component {
 
   renderDesktop = () => {
+    const { t } = this.props;
     return(
-      <div className="docked-pane menu-bar" aria-label="Menu Bar">
+      <div className="docked-pane menu-bar" aria-label={t('menuBar.ariaLabel')}>
         <div className="menu-bar-info-container">
           <MenuBarIconButton
             id="tool-information-button"
-            tooltip="Editor Information"
+            tooltip={t('menuBar.editorInfo')}
             action={() => this.props.openModal('EditorInfo')}
             icon="mascotmark"
             />
 
           <MenuBarSupportButton
-            icon="redheart"
-            text="support us"
+            icon="wickworld"
             id="support-us-button"
-            action={() => this.props.openModal('SupportUs')}
+            tooltip={t('menuBar.supportUs')}
+            action={() => this.props.openModal('WelcomeMessage')}
             />
           </div>
 
@@ -51,55 +53,57 @@ class MenuBar extends Component {
         <div className="menu-bar-actions-container">
 
           <MenuBarButton
-            text="new"
+            text={t('menuBar.new')}
             action={this.props.openNewProjectConfirmation}
           />
 
           <MenuBarButton
-            text="open"
+            text={t('menuBar.open')}
             action={this.props.openProjectFileDialog}
           />
 
           <MenuBarButton
-            text="export"
+            text={t('menuBar.export')}
             action={() => {this.props.exporting ? this.props.openExportMedia() : this.props.openExportOptions()}}
           />
 
           <MenuBarButton
-            text="save"
+            text={t('menuBar.save')}
             action={this.props.exportProjectAsWickFile}
             color='save'
           />
-          
+
           <MenuBarIconButton
             icon="gear"
             action={() => this.props.openModal('SettingsModal')}
-            tooltip="Editor Settings"
+            tooltip={t('menuBar.editorSettings')}
             tooltipPlace="left"
             id="editor-settings-button" />
         </div>
       </div>
     )
   }
-  
+
   renderMobile = () => {
+    const { t } = this.props;
     return (
       <div className="docked-pane menu-bar">
         <MenuBarIconButton icon="hamburger" action={() => this.props.openModal('MobileMenuModal')}/>
 
         <MenuBarSupportButton
-          icon="redheart"
+          icon="wickworld"
           id="support-us-button"
-          action={() => this.props.openModal('SupportUs')}
+          tooltip={t('menuBar.supportUs')}
+          action={() => this.props.openModal('WelcomeMessage')}
         />
-        
+
         <div role="button" onClick={() => this.props.openModal("SimpleProjectSettings")} className="menu-bar-project-name-mobile">
           {this.props.projectName}
         </div>
 
         <div className="menu-bar-actions-container">
           <MenuBarButton
-            text="save"
+            text={t('menuBar.save')}
             action={this.props.exportProjectAsWickFile}
             color='save'
           />
@@ -118,4 +122,4 @@ class MenuBar extends Component {
   }
 }
 
-export default MenuBar
+export default withTranslation()(MenuBar);

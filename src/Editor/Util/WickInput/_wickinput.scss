@@ -97,6 +97,16 @@ $numeric-input-background: $editor-text-input-background;
   cursor: pointer;
 
   padding: 2px;
+
+  // Прибираємо дефолтний focus-контур браузера, який лишається "висіти"
+  // після кліку мишею
+  outline: none;
+}
+
+// Але лишаємо фокус-контур для навігації з клавіатури (Tab)
+.wick-button:focus-visible {
+  outline: 2px solid $wick-green;
+  outline-offset: 1px;
 }
 
 .wick-slider {

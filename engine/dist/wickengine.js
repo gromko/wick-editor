@@ -1,5 +1,5 @@
 /*Wick Engine https://github.com/Wicklets/wick-engine*/
-var WICK_ENGINE_BUILD_VERSION = "2021.1.18.12.6.20";
+var WICK_ENGINE_BUILD_VERSION = "2026.8.24.23.42.33";
 /*!
  * Paper.js v0.12.4 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
@@ -46599,14 +46599,26 @@ WickObjectCache = class {
    * This is basically a garbage collection function. This function attempts to keep objects
    * that are referenced in undo/redo.
    * @param {Wick.Project} project - the project to use to determine which objects have no references
-   */
+   removeUnusedObjects (project) {
+      var activeObjects = this.getActiveObjects(project);
+      let uuids = activeObjects.map(obj => obj.uuid);
+      uuids.push(project.uuid); // Don't forget to include the project itself...
+       let uuidSet = new Set(uuids);
+       let historyIDs = project.history.getObjectUUIDs();
+       uuidSet = new Set([...historyIDs, ...uuidSet]);
+       this.getAllObjects().forEach(object => {
+          if(!uuidSet.has(object.uuid)) {
+              this.removeObject(object);
+          }
+      });
+  }
+  */
 
 
   removeUnusedObjects(project) {
     var activeObjects = this.getActiveObjects(project);
     let uuids = activeObjects.map(obj => obj.uuid);
-    uuids.push(project.uuid); // Don't forget to include the project itself...
-
+    uuids.push(project.uuid);
     let uuidSet = new Set(uuids);
     let historyIDs = project.history.getObjectUUIDs();
     uuidSet = new Set([...historyIDs, ...uuidSet]);
@@ -46708,6 +46720,8 @@ Wick.Transformation = class {
    * @param {number} scaleX - The amount of scaling on the x-axis
    * @param {number} scaleY - The amount of scaling on the y-axis
    * @param {number} rotation - Rotation, in degrees
+   * @param {number} skewX - Horizontal skew/shear amount
+   * @param {number} skewY - Vertical skew/shear amount
    * @param {number} opacity - Opacity, ranging from 0.0 - 1.0
    */
   constructor(args) {
@@ -46717,6 +46731,8 @@ Wick.Transformation = class {
     this.scaleX = args.scaleX === undefined ? 1 : args.scaleX;
     this.scaleY = args.scaleY === undefined ? 1 : args.scaleY;
     this.rotation = args.rotation === undefined ? 0 : args.rotation;
+    this.skewX = args.skewX === undefined ? 0 : args.skewX;
+    this.skewY = args.skewY === undefined ? 0 : args.skewY;
     this.opacity = args.opacity === undefined ? 1 : args.opacity;
   }
   /**
@@ -46731,6 +46747,8 @@ Wick.Transformation = class {
       scaleX: this.scaleX,
       scaleY: this.scaleY,
       rotation: this.rotation,
+      skewX: this.skewX,
+      skewY: this.skewY,
       opacity: this.opacity
     };
   }
@@ -47990,13 +48008,46 @@ Wick.AutoSave = class {
   static save(project, callback) {
     if (Wick.AutoSave.ENABLE_PERF_TIMERS) console.time('serialize step');
     var autosaveData = this.generateAutosaveData(project);
-    if (Wick.AutoSave.ENABLE_PERF_TIMERS) console.timeEnd('serialize step');
+    if (Wick.AutoSave.ENABLE_PERF_TIMERS) console.timeEnd('serialize step'); // Порожній проєкт (без жодного намальованого контуру чи
+    // розміщеного символу) не має сенсу зберігати в автозбереженні —
+    // і, відповідно, пропонувати користувачу для відновлення при
+    // запуску редактора.
+    //
+    // ВАЖЛИВО: тут ми лише ПРОПУСКАЄМО запис, і ніколи нічого не
+    // видаляємо. Перевірка isAutosaveDataEmpty — евристична (за
+    // відомими нам класами вмісту), і якщо вона колись помилково
+    // спрацює на непорожньому проєкті, видалення знищило б реальні
+    // дані користувача. Пропуск запису натомість нешкідливий: попередній
+    // (коректний) автозбережений стан цього проєкту просто лишиться в
+    // сховищі, а не перезапишеться скиданням стану.
+
+    if (this.isAutosaveDataEmpty(autosaveData)) {
+      callback();
+      return;
+    }
+
     if (Wick.AutoSave.ENABLE_PERF_TIMERS) console.time('localforage step');
     this.addAutosaveToList(autosaveData, () => {
       this.writeAutosaveData(autosaveData, () => {
         if (Wick.AutoSave.ENABLE_PERF_TIMERS) console.timeEnd('localforage step');
         callback();
       });
+    });
+  }
+  /**
+   * Перевіряє, чи згенеровані дані автозбереження відповідають
+   * "порожньому" проєкту — тобто проєкту без жодного об'єкта вмісту
+   * (намальованого контуру, розміщеного кліпу чи кнопки). Структурні
+   * об'єкти (Layer, Frame, Timeline тощо) присутні навіть у щойно
+   * створеному проєкті, тому їх наявність емптіність не спростовує.
+   * @param {Object} autosaveData - дані, згенеровані generateAutosaveData.
+   * @returns {boolean} true, якщо серед об'єктів немає жодного вмісту.
+   */
+
+
+  static isAutosaveDataEmpty(autosaveData) {
+    return !autosaveData.objectsData.some(objectData => {
+      return Wick.AutoSave.CONTENT_CLASSNAMES.indexOf(objectData.classname) !== -1;
     });
   }
   /**
@@ -48057,7 +48108,13 @@ Wick.AutoSave = class {
 
 
   static generateProjectFromAutosaveData(autosaveData, callback) {
-    // Deserialize all objects in the project so they are added to the ObjectCache
+    // Deserialize all objects in the project so they are added to the ObjectCache.
+    //
+    // NOTE: order here does not matter. Wick.Base getters (e.g. frame.paths,
+    // timeline.layers) resolve children lazily from Wick.ObjectCache by UUID
+    // at access time, not eagerly during fromData(). So objects can be
+    // deserialized in any order as long as they all end up in the cache
+    // before the project is actually used/rendered.
     autosaveData.objectsData.forEach(objectData => {
       var object = Wick.Base.fromData(objectData);
     }); // Deserialize the project itself
@@ -48078,6 +48135,11 @@ Wick.AutoSave = class {
 
   static addAutosaveToList(autosaveData, callback) {
     this.getAutosavesList(list => {
+      // Remove any existing entry for this project so we don't
+      // accumulate duplicate rows every time autosave runs.
+      list = list.filter(item => {
+        return item.uuid !== autosaveData.projectData.uuid;
+      });
       list.push({
         uuid: autosaveData.projectData.uuid,
         lastModified: autosaveData.lastModified
@@ -48117,6 +48179,50 @@ Wick.AutoSave = class {
         return b.lastModified - a.lastModified;
       });
       callback(projectList);
+    });
+  }
+  /**
+   * Отримує список автозбережень, відфільтрований від порожніх
+   * проєктів (без Path/Clip/Button), — саме цей список слід
+   * використовувати, щоб вирішити, чи є що пропонувати користувачу
+   * для відновлення при запуску редактора. Запис у "сирому" списку
+   * (getAutosavesList) сам по собі не гарантує, що збережені дані
+   * дійсно містять вміст: це вже могло статись раніше через баг,
+   * ручне втручання в localforage тощо, тож перевіряємо фактичний
+   * вміст кожного запису.
+   * @param {function} callback - отримує відфільтрований і
+   * відсортований (за lastModified, спаданням) список автозбережень.
+   */
+
+
+  static getNonEmptyAutosavesList(callback) {
+    this.getAutosavesList(list => {
+      if (list.length === 0) {
+        callback(list);
+        return;
+      }
+
+      var nonEmptyList = [];
+      var checked = 0;
+      list.forEach(item => {
+        this.readAutosaveData(item.uuid, autosaveData => {
+          if (autosaveData && !this.isAutosaveDataEmpty(autosaveData)) {
+            nonEmptyList.push(item);
+          }
+
+          checked++;
+
+          if (checked === list.length) {
+            // readAutosaveData виконуються паралельно, тож
+            // порядок відповідей не гарантований — відсортуємо
+            // ще раз за lastModified, як і в getAutosavesList.
+            nonEmptyList.sort((a, b) => {
+              return b.lastModified - a.lastModified;
+            });
+            callback(nonEmptyList);
+          }
+        });
+      });
     });
   }
   /**
@@ -48171,6 +48277,14 @@ Wick.AutoSave = class {
 
 };
 Wick.AutoSave.ENABLE_PERF_TIMERS = false;
+/**
+ * Назви класів (classname у серіалізованих об'єктах), наявність яких
+ * означає, що проєкт містить реальний вміст, а не є порожнім.
+ * За потреби доповніть цей список іншими типами вмісту.
+ * @type {string[]}
+ */
+
+Wick.AutoSave.CONTENT_CLASSNAMES = ['Path', 'Clip', 'Button'];
 /*
  * Copyright 2019 WICKLETS LLC
  *
@@ -51692,7 +51806,7 @@ Wick.Project = class extends Wick.Base {
     } // Clear selection if we changed between drawing tools
 
 
-    if (newTool.name !== 'pan' && newTool.name !== 'eyedropper' && newTool.name !== 'cursor') {
+    if (newTool.name !== 'pan' && newTool.name !== 'eyedropper' && newTool.name !== 'cursor' && newTool.name !== 'gradient') {
       this.selection.clear();
     }
 
@@ -55391,22 +55505,8 @@ Wick.SoundAsset = class extends Wick.FileAsset {
 
 };
 /*
- * Copyright 2020 WICKLETS LLC
- *
- * This file is part of Wick Engine.
- *
- * Wick Engine is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Wick Engine is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Wick Engine.  If not, see <https://www.gnu.org/licenses/>.
+ * Copyright 2026 WICKLETS LLC
+ * * This file is part of Wick Engine.
  */
 Wick.SVGAsset = class extends Wick.FileAsset {
   /**
@@ -55450,14 +55550,17 @@ Wick.SVGAsset = class extends Wick.FileAsset {
     return 'SVGAsset';
   }
   /**
-   * A list of Wick Paths, Clips and Layers that use this SVGAsset as their image source.
-   * I think this should return Assets not Paths
-   * @returns {Wick.Path[]}
+   * A list of all Wick.Clips in the project that were created from this
+   * SVGAsset (i.e. whose assetSourceUUID points back to this asset).
+   * @returns {Wick.Clip[]}
    */
 
 
   getInstances() {
-    return []; // TODO
+    if (!this.project) return [];
+    return this.project.getChildrenRecursive().filter(obj => {
+      return obj instanceof Wick.Clip && obj.assetSourceUUID === this.uuid;
+    });
   }
   /**
    * Check if there are any objects in the project that use this asset.
@@ -55466,15 +55569,28 @@ Wick.SVGAsset = class extends Wick.FileAsset {
 
 
   hasInstances() {
-    return false;
+    return this.getInstances().length > 0;
   }
   /**
-   * Removes all Items using this asset as their source from the project.
-   * @returns {boolean}
+   * Removes all Clips using this asset as their source from the project.
+   *
+   * WHY THIS MATTERS: Wick.Project.removeAsset() calls
+   * asset.removeAllInstances() BEFORE unlinking the asset itself. Without
+   * a real implementation here, deleting an SVGAsset from the Asset
+   * Library (e.g. via the delete button) removed only the Wick.Asset -
+   * any Wick.Clip already placed on the canvas from that asset was left
+   * behind with a dangling assetSourceUUID pointing at an asset that no
+   * longer exists in the project. That orphaned clip then broke
+   * subsequent operations, including importing another SVG.
    */
 
 
-  removeAllInstances() {// TODO
+  removeAllInstances() {
+    this.getInstances().forEach(instance => {
+      if (instance.parent) {
+        instance.parent.removeChild(instance);
+      }
+    });
   }
   /**
    * Load data in the asset
@@ -55486,6 +55602,63 @@ Wick.SVGAsset = class extends Wick.FileAsset {
     callback();
   }
   /**
+   * Wraps a single leaf paper.js item (a Path, CompoundPath, Raster,
+   * SymbolItem, PointText - anything that isn't a Layer or Group) in a
+   * Wick.Clip, the same way the paper.Group branch of walkItems() already
+   * wraps grouped content.
+   *
+   * WHY THIS MATTERS: a bare Wick.Path has no .transformation - no
+   * independent x/y/scaleX/scaleY/rotation/skewX/skewY model at all, only
+   * baked-in geometry (see Wick.Path / Wick.View.Path). That causes two
+   * concrete bugs for "simple" SVGs (ones with no surrounding <g>, which
+   * used to fall straight into `wickItem = new Wick.Path(...)` below
+   * without ever being wrapped):
+   *
+   *   1. _breakAppartShapesRecursively() sets `item.applyMatrix = true`
+   *      on the whole imported tree before conversion. If the source SVG
+   *      had e.g. <g transform="rotate(15)"> around the shape, that
+   *      rotation gets baked directly into the path's own point
+   *      coordinates - there's no separate "rotation" left to read back
+   *      out afterwards.
+   *   2. Wick.Selection._resetPositioningValues() has no rotation to
+   *      read for a Path (it isn't a Clip), so it hardcodes
+   *      boxRotation = 0. Paper.SelectionWidget then shears in raw
+   *      screen/world axes with no compensation for the shape's actual
+   *      (baked-in, tilted) orientation, AND
+   *      Paper.SelectionWidget#skewSelection() silently drops the skew
+   *      entirely for a Path (`if (wickObject && wickObject.transformation)`
+   *      is false), so nothing is even persisted correctly.
+   *
+   * Wrapping the leaf item in a Clip gives it a real transformation to
+   * skew (and rotate) against, exactly like grouped SVG content already
+   * gets, so both of the above become non-issues.
+   *
+   * @param {paper.Item} item - the leaf paper.js item to wrap.
+   * @returns {Wick.Clip} a Clip containing a single Wick.Path built from `item`.
+   */
+
+
+  static _wrapLeafItemInClip(item) {
+    var leafPath = new Wick.Path({
+      json: item.exportJSON()
+    }); // Same centering trick used for Group above: use the item's own
+    // bounding box center as the Clip's transformation origin, rather
+    // than defaulting to (0,0) (which for imported SVG content usually
+    // lands in the top-left corner of the artwork instead of its
+    // center).
+
+    var bounds = item.bounds;
+    var center = bounds.center;
+    var clip = new Wick.Clip({
+      transformation: new Wick.Transformation({
+        x: center.x,
+        y: center.y
+      })
+    });
+    clip.addObjects([leafPath]);
+    return clip;
+  }
+  /**
    * Walks through the items tree creating the apprptiate wick object for each node*
    * @param {paper.Item} item - called when the Path is done loading.
    * @returns {Wick.Base}
@@ -55493,7 +55666,7 @@ Wick.SVGAsset = class extends Wick.FileAsset {
 
 
   static walkItems(item) {
-    // create paths for all the path items, this also needs to be done for the following item.className=:
+    // 2026 create paths for all the path items, this also needs to be done for the following item.className=:
     // 'Group', 'Layer', 'Path', 'CompoundPath', 'Shape', 'Raster', 'SymbolItem', 'PointText'
     // I think path automatically handles this, but maybe not layer or group
     var wickItem = null; // Groups (clips) and layers do this differently so they must be handled separately
@@ -55520,7 +55693,22 @@ Wick.SVGAsset = class extends Wick.FileAsset {
         }
       });
     } else if (item instanceof paper.Group) {
-      wickItem = new Wick.Clip();
+      // Compute the bounding box center of this group's paper.js geometry
+      // BEFORE we tear it apart into Wick objects, so we can use it as the
+      // new Clip's transformation origin. Without this, the Clip defaults
+      // to an origin of (0,0), which for imported SVG content usually lands
+      // in the top-left corner of the artwork instead of its center. That
+      // mismatched pivot is what the canvas Selection widget uses as the
+      // center of scaling, causing resize handles near that corner to
+      // compute wildly incorrect (sometimes inverted) scale factors.
+      var groupBounds = item.bounds;
+      var center = groupBounds.center;
+      wickItem = new Wick.Clip({
+        transformation: new Wick.Transformation({
+          x: center.x,
+          y: center.y
+        })
+      });
       var wickObjects = [];
       var layers = [];
       var groupChildren = Array.from(item.children); //prevent any side effects
@@ -55537,7 +55725,10 @@ Wick.SVGAsset = class extends Wick.FileAsset {
         } else {
           wickObjects.push(walkItem);
         }
-      });
+      }); // addObjects repositions each object by subtracting the Clip's
+      // transformation (now the center we just computed), so the content
+      // ends up correctly centered around the Clip's local origin.
+
       wickItem.addObjects(wickObjects); //add the items to the project
       // add layers after onjects so the objexts don't get bound to the new layer
 
@@ -55548,13 +55739,20 @@ Wick.SVGAsset = class extends Wick.FileAsset {
       });
     } else if (item instanceof paper.Shape) {
       //console.error("SVG Import: Item is an instance of a shape. This should never happen as all shapes should be converted to paths when we call paperProject.importSVG(data, options.expandShapes = true);");
-      wickItem = new Wick.Path({//json: item.clone().toPath().exportJSON()
-      });
+      // Wrapped in a Clip for the same reason as the branch below -
+      // see _wrapLeafItemInClip's doc comment.
+      wickItem = Wick.SVGAsset._wrapLeafItemInClip(item.clone().toPath());
     } else {
       //'Path', 'CompoundPath', 'Raster', 'SymbolItem', 'PointText' all handled by Path which takes the loaded paper object expressed as JSON to load
-      wickItem = new Wick.Path({
-        json: item.exportJSON()
-      });
+      //
+      // These are wrapped in a Wick.Clip rather than left as a bare
+      // Wick.Path - see _wrapLeafItemInClip's doc comment for why:
+      // in short, a bare Path has no .transformation, so it can't
+      // correctly hold a rotation or a skew, which for "simple"
+      // SVGs (no surrounding <g>) used to turn a skew drag into a
+      // visible rotation-like distortion once the shape had any
+      // baked-in tilt from the source file.
+      wickItem = Wick.SVGAsset._wrapLeafItemInClip(item);
     }
 
     return wickItem;
@@ -55586,6 +55784,36 @@ Wick.SVGAsset = class extends Wick.FileAsset {
 
       item.replaceWith(path);
     }
+  }
+  /**
+   * Scales a paper.js item down (preserving aspect ratio) so it fits
+   * within a target percentage of the canvas dimensions, if it's
+   * currently larger than that in either dimension. Never scales UP -
+   * SVGs that are already smaller than the target area are left alone.
+   * @param {paper.Item} item - the item to scale, modified in place.
+   * @param {Wick.Project} project - the project whose canvas size to fit within.
+   * @param {number} [targetRatio=0.8] - the fraction of the canvas dimensions to fit within.
+   */
+
+
+  static _scaleToFitCanvas(item, project, targetRatio) {
+    if (!project) {
+      console.warn('SVGAsset: Could not scale imported SVG to fit the canvas, no project was given.');
+      return;
+    }
+
+    if (targetRatio === undefined) targetRatio = 0.8;
+    var bounds = item.bounds;
+    if (!bounds || bounds.width <= 0 || bounds.height <= 0) return;
+    var maxWidth = project.width * targetRatio;
+    var maxHeight = project.height * targetRatio; // Already fits - don't touch it (in particular, don't scale UP).
+
+    if (bounds.width <= maxWidth && bounds.height <= maxHeight) return;
+    var scale = Math.min(maxWidth / bounds.width, maxHeight / bounds.height); // Scale around the artwork's own center so it doesn't jump/shift -
+    // walkItems() re-centers everything relative to the Clip's origin
+    // afterward anyway, but this keeps the geometry itself tidy.
+
+    item.scale(scale, bounds.center);
   }
   /**
    * Creates a new Wick SVG that uses this asset's data.
@@ -55621,15 +55849,57 @@ Wick.SVGAsset = class extends Wick.FileAsset {
             var agroup = this.walkItems(group);
             this.project.addObject(agroup);
       */
+    var self = this;
+
     var importSVG = function (data) {
+      // paper.project.importSVG() auto-creates a new paper.Layer for
+      // the <svg> root and immediately makes it the project's active
+      // layer. Unlike regular Items, Layers ignore `insert: false` -
+      // they always register themselves into project.layers[] and
+      // activate themselves. walkItems() below only READS this raw
+      // tree to build the Wick object tree; it never removes it.
+      //
+      // Left uncleaned, every SVG import stacks another orphaned
+      // Layer onto paper.project and leaves the wrong layer active -
+      // which is why importing a SECOND SVG breaks, even after the
+      // first one's Wick.Clip has been deleted from the timeline:
+      // the corruption lives in paper.js's own project state, not in
+      // the Wick data model, so deleting the Wick object never
+      // cleans it up.
+      var activeLayerBeforeImport = paper.project.activeLayer;
       var item = paper.project.importSVG(data, {
         expandShapes: true,
         insert: false
       });
 
-      Wick.SVGAsset._breakAppartShapesRecursively(item);
+      Wick.SVGAsset._breakAppartShapesRecursively(item); // Large SVGs can easily be bigger than the canvas (SVG authors
+      // often work at arbitrary/large document sizes). Scale the
+      // artwork down - preserving aspect ratio - to fit within 80% of
+      // the canvas before converting it into Wick objects, so it
+      // doesn't dwarf or overflow the stage the moment it's inserted.
 
-      var wickItem = Wick.SVGAsset.walkItems(item).copy();
+
+      Wick.SVGAsset._scaleToFitCanvas(item, self.project);
+
+      var wickItem = Wick.SVGAsset.walkItems(item).copy(); // Tag the created Clip with a reference back to this asset.
+      // Without this, getInstances() (above) can never find this
+      // Clip later on, since it has nothing to match against - the
+      // deletion path (Project.removeAsset -> removeAllInstances)
+      // would silently do nothing, leaving orphaned SVG clips on
+      // the canvas after their source asset is deleted.
+
+      wickItem.assetSourceUUID = self.uuid; // Clean up the raw import: remove the paper.js tree (and the
+      // stray Layer it may have created) now that its content has
+      // been copied into wickItem, and restore whichever layer was
+      // active before this import so paper.project's state is
+      // exactly as it was prior to calling importSVG().
+
+      item.remove();
+
+      if (activeLayerBeforeImport) {
+        activeLayerBeforeImport.activate();
+      }
+
       callback(wickItem);
     };
 
@@ -59306,6 +59576,8 @@ Wick.Tools.Cursor = class extends Wick.Tool {
     this.CURSOR_ROTATE_BOTTOM_RIGHT = 'cursors/rotate-bottom-right.png';
     this.CURSOR_ROTATE_BOTTOM_LEFT = 'cursors/rotate-bottom-left.png';
     this.CURSOR_MOVE = 'cursors/move.png';
+    this.CURSOR_SKEW_HORIZONTAL = 'cursors/skew-horizontal.png';
+    this.CURSOR_SKEW_VERTICAL = 'cursors/skew-vertical.png';
     this.hitResult = new this.paper.HitResult();
     this.selectionBox = new this.paper.SelectionBox(paper);
     this.selectedItems = [];
@@ -59589,6 +59861,18 @@ Wick.Tools.Cursor = class extends Wick.Tool {
           '360': this.CURSOR_ROTATE_TOP
         }[angleRoundedToNearest45];
         return cursorGraphicFromAngle;
+      } else if (this.hitResult.item.data.handleType === 'skew') {
+        // Skew handles only shear along one axis: top/bottom edge
+        // handles shear horizontally, left/right edge handles shear
+        // vertically - regardless of which specific corner-ish
+        // angle they'd otherwise round to.
+        var edge = this.hitResult.item.data.handleEdge;
+
+        if (edge === 'top' || edge === 'bottom') {
+          return this.CURSOR_SKEW_HORIZONTAL;
+        } else {
+          return this.CURSOR_SKEW_VERTICAL;
+        }
       }
     } else {
       if (this.hitResult.type === 'fill') {
@@ -60435,7 +60719,18 @@ Wick.Tools.PathCursor = class extends Wick.Tool {
     this.hoverPreview = new this.paper.Item({
       insert: false
     });
-    this.detailedEditing = null;
+    this.detailedEditing = null; // Segments currently marked as "selected" in paper.js so the
+    // active node being interacted with is visually highlighted
+    // (filled anchor point instead of hollow). Tracked so we can clear
+    // the flag off old segments when the interaction moves to a new one.
+
+    this.selectedSegments = []; // Self-drawn indicator (a small filled circle) marking the active
+    // handle end being dragged. Not a native paper.js selection flag -
+    // see _showActiveHandleIndicator for why.
+
+    this.activeHandleIndicator = new this.paper.Item({
+      insert: false
+    });
     this.currentCursorIcon = '';
   }
 
@@ -60464,20 +60759,37 @@ Wick.Tools.PathCursor = class extends Wick.Tool {
 
 
     if (this.hitResult.type === 'segment' && !this.hitResult.item.data.isSelectionBoxGUI) {
-      // Hovering over a segment, draw a circle where the segment is
-      this.hoverPreview = new this.paper.Path.Circle(this.hitResult.segment.point, this.HOVER_PREVIEW_SEGMENT_RADIUS / this.paper.view.zoom);
+      // Hovering over a segment, draw a circle where the segment is.
+      // segment.point is in the item's local space - convert to
+      // global canvas coordinates before placing our own GUI circle.
+      var globalSegmentPoint = this.hitResult.item.localToGlobal(this.hitResult.segment.point);
+      this.hoverPreview = new this.paper.Path.Circle(globalSegmentPoint, this.HOVER_PREVIEW_SEGMENT_RADIUS / this.paper.view.zoom);
       this.hoverPreview.strokeColor = this.HOVER_PREVIEW_SEGMENT_STROKE_COLOR;
       this.hoverPreview.strokeWidth = this.HOVER_PREVIEW_SEGMENT_STROKE_WIDTH;
       this.hoverPreview.fillColor = this.HOVER_PREVIEW_SEGMENT_FILL_COLOR;
     } else if (this.hitResult.type === 'curve' && !this.hitResult.item.data.isSelectionBoxGUI) {
-      // Hovering over a curve, render a copy of the curve that can be bent
+      // Hovering over a curve, render a copy of the curve that can be
+      // bent. The curve's points/handles are in the item's local
+      // space - convert everything to global canvas coordinates
+      // first, or this preview ends up wildly offset/scaled for any
+      // item that isn't a simple 1:1, untransformed path (e.g. paths
+      // nested inside a Clip with its own position/scale).
+      var curveItem = this.hitResult.item;
+      var curve = this.hitResult.location.curve;
+      var globalPoint1 = curveItem.localToGlobal(curve.point1);
+      var globalPoint2 = curveItem.localToGlobal(curve.point2);
+
+      var globalHandle1 = this._localVectorToGlobal(curveItem, curve.point1, curve.handle1);
+
+      var globalHandle2 = this._localVectorToGlobal(curveItem, curve.point2, curve.handle2);
+
       this.hoverPreview = new this.paper.Path();
       this.hoverPreview.strokeWidth = this.HOVER_PREVIEW_CURVE_STROKE_WIDTH;
       this.hoverPreview.strokeColor = this.HOVER_PREVIEW_CURVE_STROKE_COLOR;
-      this.hoverPreview.add(new this.paper.Point(this.hitResult.location.curve.point1));
-      this.hoverPreview.add(new this.paper.Point(this.hitResult.location.curve.point2));
-      this.hoverPreview.segments[0].handleOut = this.hitResult.location.curve.handle1;
-      this.hoverPreview.segments[1].handleIn = this.hitResult.location.curve.handle2;
+      this.hoverPreview.add(globalPoint1);
+      this.hoverPreview.add(globalPoint2);
+      this.hoverPreview.segments[0].handleOut = globalHandle1;
+      this.hoverPreview.segments[1].handleIn = globalHandle2;
     }
 
     this.hoverPreview.data.wickType = 'gui';
@@ -60491,15 +60803,45 @@ Wick.Tools.PathCursor = class extends Wick.Tool {
     if (this.detailedEditing !== null && !(this.hitResult.item || this.hitResult.type && this.hitResult.type.startsWith('handle'))) {
       // Clicked neither on the currently edited path nor on a handle.
       this._leaveDetailedEditing();
-    }
+    } // Reset any previous active-node/handle highlight; re-applied
+    // below if this click actually landed on something selectable.
+
+
+    this._clearSegmentSelection();
+
+    this._hideActiveHandleIndicator();
 
     if (this.hitResult.item && this.hitResult.type === 'curve') {
       // Clicked a curve, start dragging it
-      this.draggingCurve = this.hitResult.location.curve;
+      this.draggingCurve = this.hitResult.location.curve; // Highlight both endpoints of the curve being bent.
+
+      this._selectSegment(this.draggingCurve.segment1);
+
+      this._selectSegment(this.draggingCurve.segment2);
     } else if (this.hitResult.item && this.hitResult.type === 'segment') {
+      // Highlight the node being clicked/dragged.
+      this._selectSegment(this.hitResult.segment);
+
       if (e.modifiers.alt || e.modifiers.command || e.modifiers.control || e.modifiers.option || e.modifiers.shift) {
         this.hitResult.segment.remove();
       }
+    } else if (this.hitResult.type && this.hitResult.type.startsWith('handle')) {
+      // Highlight the segment that owns the handle being dragged, and
+      // draw a small marker at the handle end itself so it shows as
+      // active (handle selection isn't tracked via _selectSegment -
+      // see _showActiveHandleIndicator).
+      this._selectSegment(this.hitResult.segment);
+
+      var isHandleIn = this.hitResult.type === 'handle-in';
+      var activeHandle = isHandleIn ? this.hitResult.segment.handleIn : this.hitResult.segment.handleOut; // segment.point/handleIn/handleOut are in the item's LOCAL
+      // coordinate space, not the canvas's global space - convert
+      // before placing our indicator, which is a separate item
+      // inserted directly into the canvas.
+
+      var localHandleEnd = this.hitResult.segment.point.add(activeHandle);
+      var globalHandleEnd = this.hitResult.item.localToGlobal(localHandleEnd);
+
+      this._showActiveHandleIndicator(globalHandleEnd);
     }
   }
 
@@ -60508,6 +60850,25 @@ Wick.Tools.PathCursor = class extends Wick.Tool {
 
     if (this.detailedEditing == null) {
       // If detailed editing is off, turn it on for this path.
+      //
+      // IMPORTANT: this.hitResult here comes from _updateHitResult()
+      // called above, which - since this.detailedEditing was still
+      // null at that point - ran the "bubble up to the top-level
+      // ancestor" logic (a single click can only ever select a whole
+      // group/Clip, never one of its children). For paths nested
+      // inside a group (virtually all SVG-imported paths, since every
+      // <g> becomes a Wick.Clip), that means this.hitResult.item is
+      // the outer group, NOT the path the user actually double-clicked
+      // on. Re-run the hit test in "deep" mode so detailedEditing
+      // locks onto the real leaf path - otherwise every later
+      // segment/curve hit (which correctly resolves to the leaf path)
+      // fails the UUID match against the wrongly-recorded outer group,
+      // and dragging silently does nothing while paper.js still
+      // renders every child path's segment markers (because
+      // setFullySelected cascades down a group).
+      var deepHitResult = this._updateHitResult(e, true);
+
+      this.hitResult = deepHitResult.item ? deepHitResult : this.hitResult;
       this.detailedEditing = this.hitResult.item;
       this.detailedEditing.setFullySelected(true);
     } else if (!this.hitResult.item) {
@@ -60564,8 +60925,11 @@ Wick.Tools.PathCursor = class extends Wick.Tool {
 
     if (this.hitResult.item && this.hitResult.type === 'segment') {
       // We're dragging an individual point, so move the point.
-      this.hitResult.segment.point = this.hitResult.segment.point.add(e.delta);
-      this.hoverPreview.position = this.hitResult.segment.point;
+      this.hitResult.segment.point = this.hitResult.segment.point.add(e.delta); // hoverPreview is a separate GUI item living in global canvas
+      // space - convert the (local) segment point before using it as
+      // a position, same as everywhere else in this file.
+
+      this.hoverPreview.position = this.hitResult.item.localToGlobal(this.hitResult.segment.point);
     } else if (this.hitResult.item && this.hitResult.type === 'curve') {
       // We're dragging a curve, so bend the curve.
       var segment1 = this.draggingCurve.segment1;
@@ -60586,10 +60950,13 @@ Wick.Tools.PathCursor = class extends Wick.Tool {
       handleIn.x += e.delta.x;
       handleIn.y += e.delta.y;
       handleOut.x += e.delta.x;
-      handleOut.y += e.delta.y; // Update the hover preview to match the curve we just changed
+      handleOut.y += e.delta.y; // Update the hover preview to match the curve we just changed.
+      // draggingCurve.handle1/handle2 are local vectors - convert to
+      // global before assigning them to our GUI preview item, same
+      // as when the preview was first created in onMouseMove.
 
-      this.hoverPreview.segments[0].handleOut = this.draggingCurve.handle1;
-      this.hoverPreview.segments[1].handleIn = this.draggingCurve.handle2;
+      this.hoverPreview.segments[0].handleOut = this._localVectorToGlobal(this.hitResult.item, segment1.point, this.draggingCurve.handle1);
+      this.hoverPreview.segments[1].handleIn = this._localVectorToGlobal(this.hitResult.item, segment2.point, this.draggingCurve.handle2);
     }
 
     if (this.hitResult.type && this.hitResult.type.startsWith('handle')) {
@@ -60610,7 +60977,13 @@ Wick.Tools.PathCursor = class extends Wick.Tool {
       if (!e.modifiers.shift) {
         otherHandle.x -= e.delta.x;
         otherHandle.y -= e.delta.y;
-      }
+      } // Keep the active-handle marker glued to the handle end as it
+      // moves. Convert from the item's local space to global canvas
+      // coordinates, same as when the indicator was first created.
+
+
+      var localPoint = this.hitResult.segment.point.add(handle);
+      this.activeHandleIndicator.position = this.hitResult.item.localToGlobal(localPoint);
     }
   }
 
@@ -60632,7 +61005,7 @@ Wick.Tools.PathCursor = class extends Wick.Tool {
     }
   }
 
-  _updateHitResult(e) {
+  _updateHitResult(e, deep) {
     var newHitResult = this.paper.project.hitTest(e.point, {
       fill: true,
       stroke: true,
@@ -60646,16 +61019,40 @@ Wick.Tools.PathCursor = class extends Wick.Tool {
     });
     if (!newHitResult) newHitResult = new this.paper.HitResult();
 
+    if (deep) {
+      // Caller explicitly wants the real leaf item under the cursor,
+      // skipping the "bubble up to the top-level ancestor"
+      // group-selection rule below. Used when first entering detailed
+      // editing on double-click, so we lock onto the actual path the
+      // user clicked, not its outermost container group/Clip.
+      return newHitResult;
+    }
+
     if (this.detailedEditing !== null) {
       if (this._getWickUUID(newHitResult.item) !== this._getWickUUID(this.detailedEditing)) {
         // Hits an item, but not the one currently in detail edit - handle as a click with no hit.
         return new this.paper.HitResult();
-      }
+      } // We're already in detailed editing for this exact item (UUID
+      // matched above). Return the hit as-is and skip the "bubble up
+      // to the top-level ancestor" logic below entirely.
+      //
+      // That logic exists so a normal click can only ever select a
+      // whole group/Clip, never one of its inner children - but it
+      // was also running here, AFTER we'd already confirmed this hit
+      // belongs to the exact path being detail-edited. Since paths
+      // imported from SVG are almost always nested inside one or more
+      // auto-generated Clip groups (SVGAsset.walkItems turns every
+      // <g> into a Wick.Clip), item.parent.parent was true for them,
+      // so every segment/curve hit got silently rewritten to a 'fill'
+      // hit on the outer-most ancestor. The node/handle dots still
+      // rendered fine (paper.js draws them straight from
+      // fullySelected, independent of hit-testing), but
+      // onMouseDown/onMouseDrag only react to 'segment'/'curve'/
+      // 'handle-*' hit types, so dragging them silently did nothing -
+      // exactly the "nodes appear but are inactive" symptom.
 
-      if (newHitResult.item && newHitResult.type.startsWith('handle')) {
-        // If this a click on a handle, do not apply hit type prediction below.
-        return newHitResult;
-      }
+
+      return newHitResult;
     }
 
     if (newHitResult.item && !newHitResult.item.data.isSelectionBoxGUI) {
@@ -60709,6 +61106,11 @@ Wick.Tools.PathCursor = class extends Wick.Tool {
           child.fullySelected = false;
         }
       });
+
+      this._clearSegmentSelection();
+
+      this._hideActiveHandleIndicator();
+
       this.detailedEditing = null;
       this.fireEvent('canvasModified');
     }
@@ -60720,6 +61122,88 @@ Wick.Tools.PathCursor = class extends Wick.Tool {
     } else {
       return undefined;
     }
+  }
+  /**
+   * Converts a handle/direction VECTOR (a relative offset, like
+   * segment.handleIn/handleOut, or a Curve's handle1/handle2) from an
+   * item's local coordinate space into global canvas space.
+   *
+   * This is NOT the same as calling item.localToGlobal() directly on the
+   * vector - that would also apply the item's translation, which is
+   * wrong for a relative offset (it would shift the vector's direction
+   * based on where the item happens to sit on the canvas). Instead we
+   * transform the point-plus-vector and the point separately, then take
+   * the difference - this correctly applies the item's rotation/scale to
+   * the vector while cancelling out translation.
+   *
+   * @param {paper.Item} item
+   * @param {paper.Point} localPoint - the anchor point the vector is relative to (local space).
+   * @param {paper.Point} localVector - the relative offset to convert (local space).
+   * @returns {paper.Point} the equivalent vector in global space.
+   */
+
+
+  _localVectorToGlobal(item, localPoint, localVector) {
+    var globalPoint = item.localToGlobal(localPoint);
+    var globalPointPlusVector = item.localToGlobal(localPoint.add(localVector));
+    return globalPointPlusVector.subtract(globalPoint);
+  }
+  /**
+   * Marks a segment as "selected" in paper.js so its anchor point renders
+   * as active (filled instead of hollow), and remembers it so it can be
+   * cleared later.
+   * @param {paper.Segment} segment
+   */
+
+
+  _selectSegment(segment) {
+    if (!segment) return;
+    segment.selected = true;
+    this.selectedSegments.push(segment);
+  }
+  /**
+   * Clears the "selected" highlight off any segments previously marked
+   * active via _selectSegment.
+   */
+
+
+  _clearSegmentSelection() {
+    this.selectedSegments.forEach(segment => {
+      // The segment (or its path) may have been removed/changed in
+      // the meantime (e.g. alt-click delete) - guard against errors.
+      try {
+        segment.selected = false;
+      } catch (err) {// Segment no longer valid, ignore.
+      }
+    });
+    this.selectedSegments = [];
+  }
+  /**
+   * Draws a small filled circle at the given point to mark the handle end
+   * currently being dragged as "active". This is a self-drawn GUI item
+   * (like hoverPreview) rather than a native paper.js selection flag,
+   * since toggling segment.handleIn/handleOut.selected turned out to
+   * corrupt this fork's internal path selection state.
+   * @param {paper.Point} point - absolute position of the handle end.
+   */
+
+
+  _showActiveHandleIndicator(point) {
+    this._hideActiveHandleIndicator();
+
+    this.activeHandleIndicator = new this.paper.Path.Circle(point, this.HOVER_PREVIEW_SEGMENT_RADIUS / this.paper.view.zoom);
+    this.activeHandleIndicator.strokeColor = this.HOVER_PREVIEW_SEGMENT_STROKE_COLOR;
+    this.activeHandleIndicator.strokeWidth = this.HOVER_PREVIEW_SEGMENT_STROKE_WIDTH;
+    this.activeHandleIndicator.fillColor = this.HOVER_PREVIEW_SEGMENT_STROKE_COLOR;
+    this.activeHandleIndicator.data.wickType = 'gui';
+  }
+  /**
+   * Removes the active-handle indicator drawn by _showActiveHandleIndicator.
+   */
+
+
+  _hideActiveHandleIndicator() {
+    this.activeHandleIndicator.remove();
   }
 
 };
@@ -61844,7 +62328,7 @@ class SelectionWidget {
   }
 
   set currentTransformation(currentTransformation) {
-    if (['translate', 'scale', 'rotate'].indexOf(currentTransformation) === -1) {
+    if (['translate', 'scale', 'rotate', 'skew'].indexOf(currentTransformation) === -1) {
       console.error('Paper.SelectionWidget: Invalid transformation type: ' + currentTransformation);
       currentTransformation = null;
     } else {
@@ -61901,12 +62385,15 @@ class SelectionWidget {
       this.currentTransformation = 'rotate';
     } else if (item.data.handleType === 'scale') {
       this.currentTransformation = 'scale';
+    } else if (item.data.handleType === 'skew') {
+      this.currentTransformation = 'skew';
     } else {
       this.currentTransformation = 'translate';
     }
 
     this._ghost.data.initialPosition = this._ghost.position;
     this._ghost.data.scale = new paper.Point(1, 1);
+    this._ghost.data.shear = new paper.Point(0, 0);
   }
   /**
    *
@@ -61958,6 +62445,39 @@ class SelectionWidget {
       this._ghost.rotate(rotation, this.pivot);
 
       this.boxRotation += rotation;
+    } else if (this.currentTransformation === 'skew') {
+      // Work in box-local (unrotated) space, same trick used for scaling.
+      var lastPoint = e.point.subtract(e.delta);
+      var currentPoint = e.point;
+      lastPoint = lastPoint.rotate(-this.boxRotation, this.pivot);
+      currentPoint = currentPoint.rotate(-this.boxRotation, this.pivot);
+      var deltaLocal = currentPoint.subtract(lastPoint);
+      var edge = item.data.handleEdge; // 'top' | 'bottom' | 'left' | 'right'
+
+      var boxHeight = this.boundingBox.height || 1;
+      var boxWidth = this.boundingBox.width || 1;
+
+      if (edge === 'top' || edge === 'bottom') {
+        // Dragging the top/bottom edge handle sideways shears
+        // horizontally - normalize by box height so a drag of
+        // roughly the box's own height feels like a full 45°ish skew.
+        var dShearX = deltaLocal.x / boxHeight;
+        if (edge === 'top') dShearX = -dShearX;
+        this._ghost.data.shear = this._ghost.data.shear.add(new paper.Point(dShearX, 0));
+      } else if (edge === 'left' || edge === 'right') {
+        // Dragging the left/right edge handle up/down shears vertically.
+        var dShearY = deltaLocal.y / boxWidth;
+        if (edge === 'left') dShearY = -dShearY;
+        this._ghost.data.shear = this._ghost.data.shear.add(new paper.Point(0, dShearY));
+      }
+
+      this._ghost.matrix = new paper.Matrix();
+
+      this._ghost.rotate(-this.boxRotation);
+
+      this._ghost.shear(this._ghost.data.shear.x, this._ghost.data.shear.y, this.pivot);
+
+      this._ghost.rotate(this.boxRotation);
     }
   }
   /**
@@ -61978,6 +62498,8 @@ class SelectionWidget {
       this.scaleSelection(this._ghost.data.scale);
     } else if (this.currentTransformation === 'rotate') {
       this.rotateSelection(this._ghost.rotation);
+    } else if (this.currentTransformation === 'skew') {
+      this.skewSelection(this._ghost.data.shear);
     }
 
     this._currentTransformation = null;
@@ -62016,6 +62538,72 @@ class SelectionWidget {
       item.rotate(angle, this.pivot);
     });
   }
+  /**
+   * Skews (shears) the selected items, turning their bounding rectangle
+   * into a parallelogram.
+   * @param {paper.Point} shear - the x/y shear amounts to apply.
+   */
+
+
+  skewSelection(shear) {
+    this._itemsInSelection.forEach(item => {
+      var wickObject = Wick.ObjectCache.getObjectByUUID(item.data.wickUUID);
+
+      if (wickObject && wickObject.transformation) {
+        // Об'єкти з власною моделлю transformation (Wick.Clip, у тому
+        // числі SVG, загорнуті в Clip - див. SVGAsset._wrapLeafItemInClip)
+        // керуються ЦІЛКОМ через цю модель: View.Clip.render()
+        // перебудовує matrix з нуля при КОЖНОМУ рендері (а рендер в
+        // редакторі відбувається постійно). Пряму трансформацію живого
+        // paper.js-об'єкта тут НЕ застосовуємо - вона однаково буде
+        // відкинута найближчим render().
+        //
+        // (Раніше тут була спроба відрізнити "SVG-кліп" через
+        // wickObject.objects.length і пропустити render() для нього -
+        // Wick.Clip.objects взагалі не існує як властивість, тож це
+        // завжди падало з "Cannot read properties of undefined
+        // (reading 'length')". Реальна причина спотворення була не
+        // тут, а в View.Clip.render()/generateBorder(): shear()
+        // застосовувався ДО rotation, а group.rotation = X декомпозує
+        // поточну матрицю для обчислення дельти обертання, що paper.js
+        // сам вважає ненадійним/неможливим, якщо в матриці вже є shear
+        // - це й давало видиме "розтягування". Тепер, коли render()
+        // застосовує shear ОСТАННІМ (після rotation), його можна
+        // викликати завжди.)
+        var oldPos = new paper.Point(wickObject.transformation.x, wickObject.transformation.y); // Рахуємо, як саме зсув навколо pivot/boxRotation віджета
+        // виділення (rotate -> shear -> rotate, точно та сама операція,
+        // що й нижче в гілці для Path) впливає на точку прив'язки (x,y)
+        // моделі, і застосовуємо цю ж геометричну операцію до самої
+        // точки позиції, щоб pivot скосу візуально лишився на місці.
+
+        var rotated = oldPos.rotate(-this.boxRotation, this.pivot);
+        var relative = rotated.subtract(this.pivot); // Той самий 2-параметричний зсув, що й paper.js Item#shear(shx, shy):
+        // x' = x + shx*y, y' = y + shy*x
+
+        var sheared = new paper.Point(relative.x + shear.x * relative.y, relative.y + shear.y * relative.x).add(this.pivot);
+        var newPos = sheared.rotate(this.boxRotation, this.pivot);
+        wickObject.transformation.x = newPos.x;
+        wickObject.transformation.y = newPos.y;
+        wickObject.transformation.skewX += shear.x;
+        wickObject.transformation.skewY += shear.y; // ПРИМІТКА: корекція позиції вище точна, коли boxRotation === 0
+        // (найпоширеніший випадок - об'єкт ще не обертали). Якщо об'єкт
+        // одночасно й обертається, й скошується, адитивне накопичення
+        // skewX/skewY - лише наближення.
+
+        if (wickObject.view && wickObject.view.render) {
+          wickObject.view.render();
+        }
+      } else {
+        // Голі Path (і будь-що без власної моделі transformation) не
+        // мають render(), який перебудовує matrix з моделі - для них
+        // пряма трансформація живого paper.js-об'єкта є єдиним і
+        // остаточним способом застосувати скіс.
+        item.rotate(-this.boxRotation, this.pivot);
+        item.shear(shear.x, shear.y, this.pivot);
+        item.rotate(this.boxRotation, this.pivot);
+      }
+    });
+  }
 
   _buildGUI() {
     this.item.addChild(this._buildBorder());
@@ -62037,6 +62625,10 @@ class SelectionWidget {
     guiElements.push(this._buildScalingHandle('bottomCenter'));
     guiElements.push(this._buildScalingHandle('leftCenter'));
     guiElements.push(this._buildScalingHandle('rightCenter'));
+    guiElements.push(this._buildSkewHandle('top'));
+    guiElements.push(this._buildSkewHandle('bottom'));
+    guiElements.push(this._buildSkewHandle('left'));
+    guiElements.push(this._buildSkewHandle('right'));
     this.item.addChildren(guiElements);
     this._pivotPointHandle = this._buildPivotPointHandle();
     this.layer.addChild(this._pivotPointHandle);
@@ -62087,6 +62679,47 @@ class SelectionWidget {
       strokeColor: SelectionWidget.HANDLE_STROKE_COLOR
     });
 
+    return handle;
+  }
+
+  _buildSkewHandle(edge) {
+    // edge is 'top' | 'bottom' | 'left' | 'right'. Positioned just
+    // outside the midpoint of that edge (offset along the edge's
+    // normal) so it doesn't overlap the scaling handle already sitting
+    // right on the edge midpoint.
+    var edgeCenterName = edge + 'Center'; // topCenter, bottomCenter, leftCenter, rightCenter
+
+    var basePoint = this.boundingBox[edgeCenterName];
+    var offset = SelectionWidget.SKEW_HANDLE_OFFSET / paper.view.zoom;
+    var offsetVector;
+
+    if (edge === 'top') {
+      offsetVector = new paper.Point(0, -offset);
+    } else if (edge === 'bottom') {
+      offsetVector = new paper.Point(0, offset);
+    } else if (edge === 'left') {
+      offsetVector = new paper.Point(-offset, 0);
+    } else {
+      offsetVector = new paper.Point(offset, 0);
+    }
+
+    var center = basePoint.add(offsetVector);
+    var r = SelectionWidget.HANDLE_RADIUS / paper.view.zoom * 1.4;
+    var handle = new paper.Path.Rectangle({
+      center: center,
+      size: [r, r],
+      strokeWidth: SelectionWidget.HANDLE_STROKE_WIDTH / paper.view.zoom,
+      strokeColor: SelectionWidget.HANDLE_STROKE_COLOR,
+      fillColor: SelectionWidget.HANDLE_FILL_COLOR,
+      insert: false
+    }); // Rotate into a diamond so it reads visually distinct from the
+    // round scaling handles and the pie-shaped rotation hotspots.
+
+    handle.rotate(45);
+    handle.applyMatrix = false;
+    handle.data.isSelectionBoxGUI = true;
+    handle.data.handleType = 'skew';
+    handle.data.handleEdge = edge;
     return handle;
   }
 
@@ -62227,6 +62860,7 @@ SelectionWidget.PIVOT_STROKE_COLOR = 'rgba(0,0,0,1)';
 SelectionWidget.PIVOT_RADIUS = SelectionWidget.HANDLE_RADIUS;
 SelectionWidget.ROTATION_HOTSPOT_RADIUS = 20;
 SelectionWidget.ROTATION_HOTSPOT_FILLCOLOR = 'rgba(100,150,255,0.5)';
+SelectionWidget.SKEW_HANDLE_OFFSET = 16;
 SelectionWidget.GHOST_STROKE_COLOR = 'rgba(0, 0, 0, 1.0)';
 SelectionWidget.GHOST_STROKE_WIDTH = 1;
 paper.PaperScope.inject({
@@ -63646,12 +64280,37 @@ Wick.View.Clip = class extends Wick.View {
     this.group.matrix.set(new paper.Matrix());
     this._bounds = this.group.bounds.clone(); //this._radius = null;
 
-    this.group.pivot = new this.paper.Point(0, 0);
+    this.group.pivot = new this.paper.Point(0, 0); // Порядок операцій нижче критичний і НЕ довільний.
+    //
+    // group.rotation = X - це властивість (getter/setter), яка працює
+    // через ДЕКОМПОЗИЦІЮ поточної матриці: щоб застосувати абсолютний кут,
+    // paper.js спершу читає, яке обертання вже "закодоване" в матриці, і
+    // рахує дельту відносно нього. Але, за документацією самого paper.js:
+    // "The rotation angle of the matrix. If a non-uniform rotation is
+    // applied as a result of a shear() or scale() command, undefined is
+    // returned, as the resulting transformation cannot be expressed in
+    // one rotation angle" - тобто ЯКЩО В МАТРИЦІ ВЖЕ Є SHEAR, декомпозиція
+    // кута обертання ненадійна/неможлива, і встановлення .rotation після
+    // shear() дає видиме спотворення (виглядає як розтягування/стиснення
+    // замість чистого скосу), а не помилку в консолі.
+    //
+    // group.shear(shx, shy), навпаки, НЕ декомпозує матрицю - він просто
+    // домножує на неї матрицю зсуву напряму, тож його безпечно викликати
+    // ПІСЛЯ того, як position/scaling/rotation вже встановлені.
+    //
+    // Тому: scaling -> rotation -> shear. Shear ЗАВЖДИ останній.
+
+    this.group.matrix.set(new paper.Matrix());
     this.group.position.x = this.model.transformation.x;
     this.group.position.y = this.model.transformation.y;
     this.group.scaling.x = this.model.transformation.scaleX;
     this.group.scaling.y = this.model.transformation.scaleY;
     this.group.rotation = this.model.transformation.rotation;
+
+    if (this.model.transformation.skewX || this.model.transformation.skewY) {
+      this.group.shear(this.model.transformation.skewX || 0, this.model.transformation.skewY || 0);
+    }
+
     this.group.opacity = this.model.transformation.opacity;
   }
 
@@ -63684,8 +64343,19 @@ Wick.View.Clip = class extends Wick.View {
     group.position.x = this.model.transformation.x;
     group.position.y = this.model.transformation.y;
     group.scaling.x = this.model.transformation.scaleX;
-    group.scaling.y = this.model.transformation.scaleY;
+    group.scaling.y = this.model.transformation.scaleY; // Той самий порядок, що й у render(): scaling -> rotation -> shear,
+    // shear ЗАВЖДИ останній. group.rotation = X декомпозує поточну
+    // матрицю, щоб порахувати дельту обертання, а paper.js сам визначає
+    // цю декомпозицію ненадійною/неможливою, якщо в матриці вже є shear
+    // - тому rotation обов'язково має застосовуватись ДО shear, інакше
+    // рамка виділення виходить спотвореною так само, як і сам об'єкт.
+
     group.rotation = this.model.transformation.rotation;
+
+    if (this.model.transformation.skewX || this.model.transformation.skewY) {
+      group.shear(this.model.transformation.skewX || 0, this.model.transformation.skewY || 0);
+    }
+
     return group;
   }
 
@@ -63737,7 +64407,12 @@ Wick.View.Timeline = class extends Wick.View {
   render() {
     this.frameLayers = [];
     var layersInRenderOrder = this.model.layers.filter(layer => {
-      return layer.project.isPublished || !layer.hidden;
+      // A layer's project can be null here if this Timeline belongs to a
+      // Clip that hasn't been attached to a Wick.Project yet (e.g. while
+      // still being constructed by SVGAsset.walkItems/addClip's pre-render
+      // step). In that case there's no "isPublished" state to check yet,
+      // so just fall back to the layer's own hidden flag.
+      return !layer.project || layer.project.isPublished || !layer.hidden;
     }).reverse();
     layersInRenderOrder.forEach(layer => {
       layer.view.render();
@@ -63793,7 +64468,7 @@ Wick.View.Layer = class extends Wick.View {
 
 
     this.activeFrameLayers.forEach(layer => {
-      if (this.model.project.playing || !this.model.parentClip.isFocus) {
+      if (!this.model.project || this.model.project.playing || !this.model.parentClip.isFocus) {
         layer.locked = false;
       } else {
         layer.locked = this.model.locked;
@@ -64535,6 +65210,174 @@ Wick.GUIElement.AUTO_SCROLL_SPEED = 0.17;
  * You should have received a copy of the GNU General Public License
  * along with Wick Engine.  If not, see <https://www.gnu.org/licenses/>.
  */
+
+/**
+ * A minimal, standalone localization layer for the canvas-based GUI elements
+ * in Wick Engine (Wick.GUIElement.*). This is intentionally decoupled from
+ * react-i18next, since GUIElement classes render to <canvas> and have no
+ * access to the React component tree, props, or hooks.
+ *
+ * All translated strings for every language live in a single
+ * messages.js file per language (assigned onto Wick.GUIElement.Locale._rawMessages
+ * at load time, since this build (Gulp + plain <script> concat) does not
+ * support ES module `import` of JSON):
+ *   locales/en/messages.js
+ *   locales/uk/messages.js
+ * Within each file, strings are grouped by component under a namespace key
+ * (e.g. "actionButtonsContainer", "popupMenu") to avoid collisions between
+ * unrelated components that might otherwise want the same short key (e.g.
+ * two different components both wanting a "small" tooltip).
+ *
+ * Components reference their strings with a namespaced key, in the form
+ * 'namespace.key', for example 'actionButtonsContainer.delete' or
+ * 'popupMenu.small' — matching the nesting in messages.js. Components do
+ * NOT need to import or register anything themselves; they only need to
+ * pass the right namespaced key string to Wick.GUIElement.Locale.t().
+ *
+ * Adding a new language: add a new locales/<lng>/messages.js file (same
+ * nested shape as the others, assigning onto _rawMessages.<lng>) and add
+ * its path to gulpfile.js, right after this file.
+ *
+ * The React editor (Wick Editor) is responsible for keeping
+ * Wick.GUIElement.Locale.language in sync with its own i18next language,
+ * typically by calling Wick.GUIElement.Locale.setLanguage(lng) whenever
+ * i18next's language changes (see i18n.on('languageChanged', ...)).
+ */
+Wick.GUIElement.Locale = class {
+  /**
+   * All translated strings, keyed by language code. Each value is the
+   * full nested messages object for that language, populated by the
+   * locales/<lng>/messages.js files (see gulpfile.js — they must be
+   * concatenated in AFTER this file).
+   * @private
+   */
+  static get _messages() {
+    return Wick.GUIElement.Locale._rawMessages || {};
+  }
+  /**
+   * The current language code (defaults to 'en'). Set this from the
+   * React editor to keep the canvas GUI in sync with the rest of the UI.
+   */
+
+
+  static get language() {
+    return Wick.GUIElement.Locale._language || 'en';
+  }
+  /**
+   * Changes the active language for all GUIElement canvas text.
+   * Tooltips resolve their translation at draw time (see Tooltip.js),
+   * so no explicit redraw is required for tooltips specifically, though
+   * one may still be useful for other, statically-drawn text.
+   * @param {string} lng - Language code (e.g. 'en', 'uk').
+   */
+
+
+  static setLanguage(lng) {
+    Wick.GUIElement.Locale._language = lng;
+  }
+  /**
+   * Translates a namespaced string key (e.g. 'actionButtonsContainer.delete')
+   * into the current language. Falls back to English, then to the key
+   * itself, if no translation is found or the key isn't namespaced.
+   * @param {string} key - The namespaced string key to translate.
+   * @return {string} The translated string.
+   */
+
+
+  static t(key) {
+    if (typeof key !== 'string') return key;
+    var separatorIndex = key.indexOf('.');
+    if (separatorIndex === -1) return key;
+    var namespace = key.slice(0, separatorIndex);
+    var stringKey = key.slice(separatorIndex + 1);
+    var lng = Wick.GUIElement.Locale.language;
+    var messages = Wick.GUIElement.Locale._messages;
+    var translated = messages[lng] && messages[lng][namespace] && messages[lng][namespace][stringKey];
+    if (translated !== undefined) return translated;
+    var fallback = messages.en && messages.en[namespace] && messages.en[namespace][stringKey];
+    if (fallback !== undefined) return fallback;
+    return key;
+  }
+
+};
+// engine/src/locales/en/messages.js
+Wick.GUIElement.Locale = Wick.GUIElement.Locale || {};
+Wick.GUIElement.Locale._rawMessages = Wick.GUIElement.Locale._rawMessages || {};
+Wick.GUIElement.Locale._rawMessages.en = {
+  "actionButtonsContainer": {
+    "delete": "Delete",
+    "add_frame": "Add Frame",
+    "add_tween": "Add Tween",
+    "gap_fill_mode": "Gap Fill Mode",
+    "frame_size": "Frame Size"
+  },
+  "popupMenu": {
+    "extend_frames": "Extend Frames",
+    "add_blank_frames": "Add Blank Frames",
+    "small": "Small",
+    "medium": "Medium",
+    "large": "Large"
+  },
+  "breadcrumbsButton": {
+    "clip": "Clip",
+    "project": "Project"
+  },
+  "layer": {
+    "default_name": "Layer",
+    "show_layer": "Show Layer",
+    "hide_layer": "Hide Layer",
+    "lock_layer": "Lock Layer",
+    "unlock_layer": "Unlock Layer"
+  }
+};
+// engine/src/locales/uk/messages.js
+Wick.GUIElement.Locale = Wick.GUIElement.Locale || {};
+Wick.GUIElement.Locale._rawMessages = Wick.GUIElement.Locale._rawMessages || {};
+Wick.GUIElement.Locale._rawMessages.uk = {
+  "actionButtonsContainer": {
+    "delete": "Видалити",
+    "add_frame": "Додати кадр",
+    "add_tween": "Додати твін",
+    "gap_fill_mode": "Режим заповнення розривів",
+    "frame_size": "Розмір кадру"
+  },
+  "popupMenu": {
+    "extend_frames": "Розтягнути кадри",
+    "add_blank_frames": "Додати порожні кадри",
+    "small": "Малий",
+    "medium": "Середній",
+    "large": "Великий"
+  },
+  "breadcrumbsButton": {
+    "clip": "Кліп",
+    "project": "Проєкт"
+  },
+  "layer": {
+    "default_name": "Шар",
+    "show_layer": "Показати шар",
+    "hide_layer": "Приховати шар",
+    "lock_layer": "Заблокувати шар",
+    "unlock_layer": "Розблокувати шар"
+  }
+};
+/*
+ * Copyright 2020 WICKLETS LLC
+ *
+ * This file is part of Wick Engine.
+ *
+ * Wick Engine is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Wick Engine is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Wick Engine.  If not, see <https://www.gnu.org/licenses/>.
+ */
 Wick.GUIElement.Button = class extends Wick.GUIElement {
   /**
    * Create a new button.
@@ -64772,11 +65615,15 @@ Wick.GUIElement.ActionButton = class extends Wick.GUIElement.Button {
  * You should have received a copy of the GNU General Public License
  * along with Wick Engine.  If not, see <https://www.gnu.org/licenses/>.
  */
+// Translation strings for this component live under the
+// "actionButtonsContainer" namespace in locales/<lng>/messages.json
+// (loaded centrally by Wick.GUIElement.Locale — see GUIElementLocale.js).
+// Tooltip keys below reference that namespace, e.g. 'actionButtonsContainer.delete'.
 Wick.GUIElement.ActionButtonsContainer = class extends Wick.GUIElement {
   constructor(model) {
     super(model);
     this.deleteFrameButton = new Wick.GUIElement.ActionButton(this.model, {
-      tooltip: 'Delete',
+      tooltip: 'actionButtonsContainer.delete',
       icon: 'delete_frame',
       clickFn: () => {
         this.model.project.deleteSelectedObjects();
@@ -64784,7 +65631,7 @@ Wick.GUIElement.ActionButtonsContainer = class extends Wick.GUIElement {
       }
     });
     this.insertBlankFrameButton = new Wick.GUIElement.ActionButton(this.model, {
-      tooltip: 'Add Frame',
+      tooltip: 'actionButtonsContainer.add_frame',
       icon: 'cut_frame',
       clickFn: () => {
         this.model.project.insertBlankFrame();
@@ -64792,7 +65639,7 @@ Wick.GUIElement.ActionButtonsContainer = class extends Wick.GUIElement {
       }
     });
     this.addTweenButton = new Wick.GUIElement.ActionButton(this.model, {
-      tooltip: 'Add Tween',
+      tooltip: 'actionButtonsContainer.add_tween',
       icon: 'add_tween',
       clickFn: () => {
         this.model.project.createTween();
@@ -64802,7 +65649,7 @@ Wick.GUIElement.ActionButtonsContainer = class extends Wick.GUIElement {
 
     if (!Wick.GUIElement.IS_MOBILE) {
       this.fillGapsModeButton = new Wick.GUIElement.ActionButton(this.model, {
-        tooltip: 'Gap Fill Mode',
+        tooltip: 'actionButtonsContainer.gap_fill_mode',
         icon: 'gap_fill_menu_blank_frames',
         height: 8,
         width: 16,
@@ -64815,7 +65662,7 @@ Wick.GUIElement.ActionButtonsContainer = class extends Wick.GUIElement {
         }
       });
       this.gridSizeButton = new Wick.GUIElement.ActionButton(this.model, {
-        tooltip: 'Frame Size',
+        tooltip: 'actionButtonsContainer.frame_size',
         icon: 'frame_size_menu',
         height: 8,
         width: 16,
@@ -64986,8 +65833,13 @@ Wick.GUIElement.BreadcrumbsButton = class extends Wick.GUIElement.Button {
     super.draw();
     var ctx = this.ctx; // Button label settings
 
-    ctx.font = "14px Nunito Sans";
-    var textContent = this.model.identifier || 'Clip';
+    ctx.font = "14px Nunito Sans"; // The root clip of the project always has identifier === 'Project'
+    // (see Wick.Project constructor), which is a hardcoded English label,
+    // not something the user can customize like a normal clip identifier.
+    // Translate it instead of showing it verbatim.
+
+    var isRoot = this.model === this.model.project.root;
+    var textContent = isRoot ? Wick.GUIElement.Locale.t('breadcrumbsButton.project') : this.model.identifier || Wick.GUIElement.Locale.t('breadcrumbsButton.clip');
     var textWidth = ctx.measureText(textContent).width;
     var textX = Wick.GUIElement.BREADCRUMBS_PADDING;
     var textY = Wick.GUIElement.BREADCRUMBS_HEIGHT / 2 + Wick.GUIElement.BREADCRUMBS_PADDING; // Fill color based on mouse interactions
@@ -65752,8 +66604,8 @@ Wick.GUIElement.Layer = class extends Wick.GUIElement {
     this.cursor = 'pointer';
     this.canAutoScrollY = true;
     this.hideButton = new Wick.GUIElement.LayerButton(model, {
-      toggledTooltip: 'Show Layer',
-      untoggledTooltip: 'Hide Layer',
+      toggledTooltip: 'layer.show_layer',
+      untoggledTooltip: 'layer.hide_layer',
       toggledIcon: 'show_layer',
       untoggledIcon: 'hide_layer',
       isToggledFn: () => {
@@ -65766,8 +66618,8 @@ Wick.GUIElement.Layer = class extends Wick.GUIElement {
       }
     });
     this.lockButton = new Wick.GUIElement.LayerButton(model, {
-      toggledTooltip: 'Unlock Layer',
-      untoggledTooltip: 'Lock Layer',
+      toggledTooltip: 'layer.unlock_layer',
+      untoggledTooltip: 'layer.lock_layer',
       toggledIcon: 'unlock_layer',
       untoggledIcon: 'lock_layer',
       isToggledFn: () => {
@@ -65828,7 +66680,7 @@ Wick.GUIElement.Layer = class extends Wick.GUIElement {
     ctx.clip();
     ctx.font = "16px " + Wick.GUIElement.LAYER_LABEL_FONT_FAMILY;
     ctx.fillStyle = this.model.isActive ? Wick.GUIElement.LAYER_LABEL_ACTIVE_FONT_COLOR : Wick.GUIElement.LAYER_LABEL_INACTIVE_FONT_COLOR;
-    ctx.fillText(this.model.name, 57, this.gridCellHeight / 2 + 6);
+    ctx.fillText(this._displayName(), 57, this.gridCellHeight / 2 + 6);
     ctx.restore(); // Buttons
 
     ctx.save();
@@ -65850,6 +66702,31 @@ Wick.GUIElement.Layer = class extends Wick.GUIElement {
       ctx.stroke();
       ctx.restore();
     }
+  }
+  /**
+   * Layer names default to "Layer" or "Layer N" (see Wick.Timeline.addLayer),
+   * a hardcoded English string stored directly in the model, since that
+   * value can end up in the saved .wick file and must stay stable across
+   * languages. Translate it for display only when it still matches that
+   * exact auto-generated pattern; leave any name the user typed in alone.
+   * @returns {string} The name to draw for this layer.
+   */
+
+
+  _displayName() {
+    var name = this.model.name;
+
+    if (name === 'Layer') {
+      return Wick.GUIElement.Locale.t('layer.default_name');
+    }
+
+    var match = /^Layer (\d+)$/.exec(name);
+
+    if (match) {
+      return Wick.GUIElement.Locale.t('layer.default_name') + ' ' + match[1];
+    }
+
+    return name;
   }
 
   get bounds() {
@@ -66394,6 +67271,9 @@ Wick.GUIElement.Playhead = class extends Wick.GUIElement {
  * You should have received a copy of the GNU General Public License
  * along with Wick Engine.  If not, see <https://www.gnu.org/licenses/>.
  */
+// Translation strings for this component live under the "popupMenu"
+// namespace in locales/<lng>/messages.json (loaded centrally by
+// Wick.GUIElement.Locale — see GUIElementLocale.js).
 Wick.GUIElement.PopupMenu = class extends Wick.GUIElement {
   constructor(model, args) {
     super(model, args);
@@ -66402,7 +67282,7 @@ Wick.GUIElement.PopupMenu = class extends Wick.GUIElement {
     this.height = 40;
     this.mode = args.mode;
     this.extendFramesButton = new Wick.GUIElement.ActionButton(this.model, {
-      tooltip: 'Extend Frames',
+      tooltip: 'popupMenu.extend_frames',
       icon: 'gap_fill_extend_frames',
       clickFn: () => {
         this.project.model.activeTimeline.fillGapsMethod = 'auto_extend';
@@ -66410,7 +67290,7 @@ Wick.GUIElement.PopupMenu = class extends Wick.GUIElement {
       }
     });
     this.emptyFramesButton = new Wick.GUIElement.ActionButton(this.model, {
-      tooltip: 'Add Blank Frames',
+      tooltip: 'popupMenu.add_blank_frames',
       icon: 'gap_fill_empty_frames',
       clickFn: () => {
         this.project.model.activeTimeline.fillGapsMethod = 'blank_frames';
@@ -66418,7 +67298,7 @@ Wick.GUIElement.PopupMenu = class extends Wick.GUIElement {
       }
     });
     this.smallFramesButton = new Wick.GUIElement.ActionButton(this.model, {
-      tooltip: 'Small',
+      tooltip: 'popupMenu.small',
       icon: 'small_frames',
       clickFn: () => {
         Wick.GUIElement.GRID_DEFAULT_CELL_WIDTH = Wick.GUIElement.GRID_SMALL_CELL_WIDTH;
@@ -66426,7 +67306,7 @@ Wick.GUIElement.PopupMenu = class extends Wick.GUIElement {
       }
     });
     this.normalFramesButton = new Wick.GUIElement.ActionButton(this.model, {
-      tooltip: 'Medium',
+      tooltip: 'popupMenu.medium',
       icon: 'normal_frames',
       clickFn: () => {
         Wick.GUIElement.GRID_DEFAULT_CELL_WIDTH = Wick.GUIElement.GRID_NORMAL_CELL_WIDTH;
@@ -66434,7 +67314,7 @@ Wick.GUIElement.PopupMenu = class extends Wick.GUIElement {
       }
     });
     this.largeFramesButton = new Wick.GUIElement.ActionButton(this.model, {
-      tooltip: 'Large',
+      tooltip: 'popupMenu.large',
       icon: 'large_frames',
       clickFn: () => {
         Wick.GUIElement.GRID_DEFAULT_CELL_WIDTH = Wick.GUIElement.GRID_LARGE_CELL_WIDTH;
@@ -67461,7 +68341,7 @@ Wick.GUIElement.Tooltip = class extends Wick.GUIElement {
     var ctx = this.ctx; // Font settings
 
     ctx.font = "14px Nunito Sans";
-    var textContent = this.label;
+    var textContent = Wick.GUIElement.Locale.t(this.label);
     var textWidth = ctx.measureText(textContent).width;
     var textHeight = 14; // Tooltip
 

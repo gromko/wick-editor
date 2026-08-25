@@ -85,7 +85,7 @@ Wick.Project = class extends Wick.Base {
             ellipse: new Wick.Tools.Ellipse(),
             eraser: new Wick.Tools.Eraser(),
             eyedropper: new Wick.Tools.Eyedropper(),
-            fillbucket: new Wick.Tools.FillBucket(),
+            fillbucket: new Wick.Tools.FillBucket(),            
             interact: new Wick.Tools.Interact(),
             line: new Wick.Tools.Line(),
             none: new Wick.Tools.None(),
@@ -1722,7 +1722,8 @@ Wick.Project = class extends Wick.Base {
         // Clear selection if we changed between drawing tools
         if (newTool.name !== 'pan' &&
             newTool.name !== 'eyedropper' &&
-            newTool.name !== 'cursor') {
+            newTool.name !== 'cursor' &&
+            newTool.name !== 'gradient') {
             this.selection.clear();
         }
 

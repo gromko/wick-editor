@@ -46,12 +46,44 @@ Wick.AutoSave = class {
         var autosaveData = this.generateAutosaveData(project);
         if(Wick.AutoSave.ENABLE_PERF_TIMERS) console.timeEnd('serialize step')
 
+        // Порожній проєкт (без жодного намальованого контуру чи
+        // розміщеного символу) не має сенсу зберігати в автозбереженні —
+        // і, відповідно, пропонувати користувачу для відновлення при
+        // запуску редактора.
+        //
+        // ВАЖЛИВО: тут ми лише ПРОПУСКАЄМО запис, і ніколи нічого не
+        // видаляємо. Перевірка isAutosaveDataEmpty — евристична (за
+        // відомими нам класами вмісту), і якщо вона колись помилково
+        // спрацює на непорожньому проєкті, видалення знищило б реальні
+        // дані користувача. Пропуск запису натомість нешкідливий: попередній
+        // (коректний) автозбережений стан цього проєкту просто лишиться в
+        // сховищі, а не перезапишеться скиданням стану.
+        if (this.isAutosaveDataEmpty(autosaveData)) {
+            callback();
+            return;
+        }
+
         if(Wick.AutoSave.ENABLE_PERF_TIMERS) console.time('localforage step')
         this.addAutosaveToList(autosaveData, () => {
             this.writeAutosaveData(autosaveData, () => {
                 if(Wick.AutoSave.ENABLE_PERF_TIMERS) console.timeEnd('localforage step')
                 callback();
             })
+        });
+    }
+
+    /**
+     * Перевіряє, чи згенеровані дані автозбереження відповідають
+     * "порожньому" проєкту — тобто проєкту без жодного об'єкта вмісту
+     * (намальованого контуру, розміщеного кліпу чи кнопки). Структурні
+     * об'єкти (Layer, Frame, Timeline тощо) присутні навіть у щойно
+     * створеному проєкті, тому їх наявність емптіність не спростовує.
+     * @param {Object} autosaveData - дані, згенеровані generateAutosaveData.
+     * @returns {boolean} true, якщо серед об'єктів немає жодного вмісту.
+     */
+    static isAutosaveDataEmpty (autosaveData) {
+        return !autosaveData.objectsData.some(objectData => {
+            return Wick.AutoSave.CONTENT_CLASSNAMES.indexOf(objectData.classname) !== -1;
         });
     }
 
@@ -109,22 +141,28 @@ Wick.AutoSave = class {
      * Creates a project from data loaded from the autosave system
      * @param {object} autosaveData - An autosave data object, use generateAutosaveData/readAutosaveData to get this object
      */
-    static generateProjectFromAutosaveData (autosaveData, callback) {
-        // Deserialize all objects in the project so they are added to the ObjectCache
-        autosaveData.objectsData.forEach(objectData => {
-            var object = Wick.Base.fromData(objectData);
-        });
+static generateProjectFromAutosaveData (autosaveData, callback) {
+  // Deserialize all objects in the project so they are added to the ObjectCache.
+  //
+  // NOTE: order here does not matter. Wick.Base getters (e.g. frame.paths,
+  // timeline.layers) resolve children lazily from Wick.ObjectCache by UUID
+  // at access time, not eagerly during fromData(). So objects can be
+  // deserialized in any order as long as they all end up in the cache
+  // before the project is actually used/rendered.
+  autosaveData.objectsData.forEach(objectData => {
+    var object = Wick.Base.fromData(objectData);
+  });
 
-        // Deserialize the project itself
-        var project = Wick.Base.fromData(autosaveData.projectData);
+  // Deserialize the project itself
+  var project = Wick.Base.fromData(autosaveData.projectData);
 
-        // Load source files for assets from localforage
-        Wick.FileCache.loadFilesFromLocalforage(project, () => {
-            project.loadAssets(() => {
-                callback(project);
-            });
-        });
-    }
+  // Load source files for assets from localforage
+  Wick.FileCache.loadFilesFromLocalforage(project, () => {
+    project.loadAssets(() => {
+      callback(project);
+    });
+  });
+}
 
     /**
      * Adds autosaved project data to the list of autosaved projects.
@@ -132,6 +170,12 @@ Wick.AutoSave = class {
      */
     static addAutosaveToList (autosaveData, callback) {
         this.getAutosavesList((list) => {
+            // Remove any existing entry for this project so we don't
+            // accumulate duplicate rows every time autosave runs.
+            list = list.filter(item => {
+                return item.uuid !== autosaveData.projectData.uuid;
+            });
+
             list.push({
                 uuid: autosaveData.projectData.uuid,
                 lastModified: autosaveData.lastModified,
@@ -171,6 +215,49 @@ Wick.AutoSave = class {
             });
 
             callback(projectList);
+        });
+    }
+
+    /**
+     * Отримує список автозбережень, відфільтрований від порожніх
+     * проєктів (без Path/Clip/Button), — саме цей список слід
+     * використовувати, щоб вирішити, чи є що пропонувати користувачу
+     * для відновлення при запуску редактора. Запис у "сирому" списку
+     * (getAutosavesList) сам по собі не гарантує, що збережені дані
+     * дійсно містять вміст: це вже могло статись раніше через баг,
+     * ручне втручання в localforage тощо, тож перевіряємо фактичний
+     * вміст кожного запису.
+     * @param {function} callback - отримує відфільтрований і
+     * відсортований (за lastModified, спаданням) список автозбережень.
+     */
+    static getNonEmptyAutosavesList (callback) {
+        this.getAutosavesList(list => {
+            if (list.length === 0) {
+                callback(list);
+                return;
+            }
+
+            var nonEmptyList = [];
+            var checked = 0;
+
+            list.forEach(item => {
+                this.readAutosaveData(item.uuid, autosaveData => {
+                    if (autosaveData && !this.isAutosaveDataEmpty(autosaveData)) {
+                        nonEmptyList.push(item);
+                    }
+
+                    checked++;
+                    if (checked === list.length) {
+                        // readAutosaveData виконуються паралельно, тож
+                        // порядок відповідей не гарантований — відсортуємо
+                        // ще раз за lastModified, як і в getAutosavesList.
+                        nonEmptyList.sort((a, b) => {
+                            return b.lastModified - a.lastModified;
+                        });
+                        callback(nonEmptyList);
+                    }
+                });
+            });
         });
     }
 
@@ -220,3 +307,11 @@ Wick.AutoSave = class {
 }
 
 Wick.AutoSave.ENABLE_PERF_TIMERS = false;
+
+/**
+ * Назви класів (classname у серіалізованих об'єктах), наявність яких
+ * означає, що проєкт містить реальний вміст, а не є порожнім.
+ * За потреби доповніть цей список іншими типами вмісту.
+ * @type {string[]}
+ */
+Wick.AutoSave.CONTENT_CLASSNAMES = ['Path', 'Clip', 'Button'];

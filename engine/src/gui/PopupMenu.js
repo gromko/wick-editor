@@ -17,6 +17,10 @@
  * along with Wick Engine.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// Translation strings for this component live under the "popupMenu"
+// namespace in locales/<lng>/messages.json (loaded centrally by
+// Wick.GUIElement.Locale — see GUIElementLocale.js).
+
 Wick.GUIElement.PopupMenu = class extends Wick.GUIElement {
     constructor (model, args) {
         super(model, args);
@@ -29,7 +33,7 @@ Wick.GUIElement.PopupMenu = class extends Wick.GUIElement {
         this.mode = args.mode;
 
         this.extendFramesButton = new Wick.GUIElement.ActionButton(this.model, {
-            tooltip: 'Extend Frames',
+            tooltip: 'popupMenu.extend_frames',
             icon: 'gap_fill_extend_frames',
             clickFn: () => {
                 this.project.model.activeTimeline.fillGapsMethod = 'auto_extend';
@@ -38,7 +42,7 @@ Wick.GUIElement.PopupMenu = class extends Wick.GUIElement {
         });
 
         this.emptyFramesButton = new Wick.GUIElement.ActionButton(this.model, {
-            tooltip: 'Add Blank Frames',
+            tooltip: 'popupMenu.add_blank_frames',
             icon: 'gap_fill_empty_frames',
             clickFn: () => {
                 this.project.model.activeTimeline.fillGapsMethod = 'blank_frames';
@@ -47,7 +51,7 @@ Wick.GUIElement.PopupMenu = class extends Wick.GUIElement {
         });
 
         this.smallFramesButton = new Wick.GUIElement.ActionButton(this.model, {
-            tooltip: 'Small',
+            tooltip: 'popupMenu.small',
             icon: 'small_frames',
             clickFn: () => {
                 Wick.GUIElement.GRID_DEFAULT_CELL_WIDTH = Wick.GUIElement.GRID_SMALL_CELL_WIDTH;
@@ -56,7 +60,7 @@ Wick.GUIElement.PopupMenu = class extends Wick.GUIElement {
         });
 
         this.normalFramesButton = new Wick.GUIElement.ActionButton(this.model, {
-            tooltip: 'Medium',
+            tooltip: 'popupMenu.medium',
             icon: 'normal_frames',
             clickFn: () => {
                 Wick.GUIElement.GRID_DEFAULT_CELL_WIDTH = Wick.GUIElement.GRID_NORMAL_CELL_WIDTH;
@@ -65,7 +69,7 @@ Wick.GUIElement.PopupMenu = class extends Wick.GUIElement {
         });
 
         this.largeFramesButton = new Wick.GUIElement.ActionButton(this.model, {
-            tooltip: 'Large',
+            tooltip: 'popupMenu.large',
             icon: 'large_frames',
             clickFn: () => {
                 Wick.GUIElement.GRID_DEFAULT_CELL_WIDTH = Wick.GUIElement.GRID_LARGE_CELL_WIDTH;

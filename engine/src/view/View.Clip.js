@@ -173,13 +173,41 @@ Wick.View.Clip = class extends Wick.View {
         //this._radius = null;
 
         this.group.pivot = new this.paper.Point(0,0);
-        this.group.position.x = this.model.transformation.x;
-        this.group.position.y = this.model.transformation.y;
-        this.group.scaling.x = this.model.transformation.scaleX;
-        this.group.scaling.y = this.model.transformation.scaleY;
-        this.group.rotation = this.model.transformation.rotation;
-        this.group.opacity = this.model.transformation.opacity;
+        
+   // Порядок операцій нижче критичний і НЕ довільний.
+    //
+    // group.rotation = X - це властивість (getter/setter), яка працює
+    // через ДЕКОМПОЗИЦІЮ поточної матриці: щоб застосувати абсолютний кут,
+    // paper.js спершу читає, яке обертання вже "закодоване" в матриці, і
+    // рахує дельту відносно нього. Але, за документацією самого paper.js:
+    // "The rotation angle of the matrix. If a non-uniform rotation is
+    // applied as a result of a shear() or scale() command, undefined is
+    // returned, as the resulting transformation cannot be expressed in
+    // one rotation angle" - тобто ЯКЩО В МАТРИЦІ ВЖЕ Є SHEAR, декомпозиція
+    // кута обертання ненадійна/неможлива, і встановлення .rotation після
+    // shear() дає видиме спотворення (виглядає як розтягування/стиснення
+    // замість чистого скосу), а не помилку в консолі.
+    //
+    // group.shear(shx, shy), навпаки, НЕ декомпозує матрицю - він просто
+    // домножує на неї матрицю зсуву напряму, тож його безпечно викликати
+    // ПІСЛЯ того, як position/scaling/rotation вже встановлені.
+    //
+    // Тому: scaling -> rotation -> shear. Shear ЗАВЖДИ останній.
+    this.group.matrix.set(new paper.Matrix());
+    this.group.position.x = this.model.transformation.x;
+    this.group.position.y = this.model.transformation.y;
+    this.group.scaling.x = this.model.transformation.scaleX;
+    this.group.scaling.y = this.model.transformation.scaleY;
+    this.group.rotation = this.model.transformation.rotation;
+    if (this.model.transformation.skewX || this.model.transformation.skewY) {
+        this.group.shear(
+            this.model.transformation.skewX || 0,
+            this.model.transformation.skewY || 0
+        );
     }
+
+    this.group.opacity = this.model.transformation.opacity;
+}
 
     generateBorder () {
         var group = new this.paper.Group({insert:false});
@@ -211,7 +239,19 @@ Wick.View.Clip = class extends Wick.View {
         group.position.y = this.model.transformation.y;
         group.scaling.x = this.model.transformation.scaleX;
         group.scaling.y = this.model.transformation.scaleY;
+        // Той самий порядок, що й у render(): scaling -> rotation -> shear,
+        // shear ЗАВЖДИ останній. group.rotation = X декомпозує поточну
+        // матрицю, щоб порахувати дельту обертання, а paper.js сам визначає
+        // цю декомпозицію ненадійною/неможливою, якщо в матриці вже є shear
+        // - тому rotation обов'язково має застосовуватись ДО shear, інакше
+        // рамка виділення виходить спотвореною так само, як і сам об'єкт.
         group.rotation = this.model.transformation.rotation;
+        if (this.model.transformation.skewX || this.model.transformation.skewY) {
+            group.shear(
+                this.model.transformation.skewX || 0,
+                this.model.transformation.skewY || 0
+            );
+        }
 
         return group;
     }

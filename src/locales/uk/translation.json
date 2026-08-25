@@ -1,0 +1,547 @@
+{
+  "menuBar": {
+    "ariaLabel": "Панель меню",
+    "new": "новий",
+    "open": "відкрити",
+    "export": "експорт",
+    "save": "зберегти",
+    "supportUs": "про Wick Editor",
+    "editorInfo": "Інформація про редактор",
+    "editorSettings": "Налаштування редактора",
+    "defaultProjectName": "Мій проєкт"
+  },
+  "inspector": {
+    "ariaLabel": "Панель інспектора",
+    "title": "Інспектор",
+    "selectionTypes": {
+      "frame": "Кадр",
+      "multiframe": "Кілька кадрів",
+      "tween": "Твін",
+      "multitween": "Кілька твінів",
+      "clip": "Кліп",
+      "button": "Кнопка",
+      "path": "Контур",
+      "text": "Текст",
+      "image": "Зображення",
+      "multipath": "Кілька контурів",
+      "multiclip": "Кілька кліпів",
+      "multitimeline": "Кілька таймлайнів",
+      "multicanvas": "Кілька полотен",
+      "imageasset": "Файл зображення",
+      "soundasset": "Звуковий файл",
+      "multiassetmixed": "Кілька файлів",
+      "multisoundasset": "Кілька звукових файлів",
+      "multiimageasset": "Кілька зображень",
+      "unknown": ""
+    },
+    "tooltips": {
+      "strokeWidth": "Товщина обведення",
+      "fill": "Заповнення",
+      "opacity": "Прозорість",
+      "stroke": "Обведення",
+      "weight": "Насичення",
+      "fontFamily": "Гарнітура",
+      "style": "Стиль",
+      "fontSize": "Розмір",
+      "name": "Назва",
+      "file": "Файл",
+      "length": "Тривалість",
+      "originX": "Центр X",
+      "originY": "Центр Y",
+      "x": "X",
+      "y": "Y",
+      "width": "Ширина",
+      "height": "Висота",
+      "scaleW": "Масштаб Ш",
+      "scaleH": "Масштаб В",
+      "rotation": "Обертання",
+      "sound": "Звук",
+      "volume": "Гучність",
+      "startMs": "Початок (мс)",
+      "animation": "Анімація",
+      "frame": "Кадр",
+      "synced": "Синхронізовано",
+      "easingType": "Тип згладжування",
+      "fullRotations": "Повних обертів"
+    },
+    "options": {
+      "noSound": "Без звуку",
+      "fontStyleNormal": "звичайний",
+      "fontStyleItalic": "курсив",
+      "fontWeightThin": "тонкий",
+      "fontWeightExtraLight": "дуже світлий",
+      "fontWeightLight": "світлий",
+      "fontWeightNormal": "звичайний",
+      "fontWeightMedium": "середній",
+      "fontWeightSemiBold": "напівжирний",
+      "fontWeightBold": "жирний",
+      "fontWeightExtraBold": "дуже жирний",
+      "fontWeightBlack": "чорний"
+    },
+    "placeholders": {
+      "noName": "без_назви"
+    }
+  },
+  "outliner": {
+    "ariaLabel": "Організатор",
+    "title": "Організатор",
+    "tooltips": {
+      "display": "Показати"
+    },
+    "hideOutliner": "Сховати Організатор",
+    "showOutliner": "Показати Організатор",
+    "objectTypes": {
+      "layer": "Шар",
+      "frame": "Кадр",
+      "path": "Контур",
+      "button": "Кнопка",
+      "clip": "Кліп",
+      "text": "Текст",
+      "image": "Зображення"
+    },
+    "widgets": {
+      "hideObjects": "Приховати об’єкти типу «{{type}}»",
+      "showObjects": "Показати об’єкти типу «{{type}}»"
+    },
+    "selectObjectAriaLabel": "вибрати об’єкт структури",
+    "hideLayer": "Приховати шар",
+    "lockLayer": "Заблокувати шар",
+    "editTimeline": "Редагувати таймлайн",
+    "soundIconAlt": "звук",
+    "scriptIconAlt": "скрипт",
+    "dropdownIconAlt": "розгорнути/згорнути",
+    "defaultLayerName": "Шар",
+    "defaultLayerNameNumbered": "Шар {{number}}"
+  },
+  "toolbox": {
+    "ariaLabel": "Панель інструментів",
+    "tooltips": {
+      "cursor": "Виділення",
+      "brush": "Пензель",
+      "pencil": "Олівець",
+      "eraser": "Гумка",
+      "rectangle": "Прямокутник",
+      "ellipse": "Еліпс",
+      "line": "Лінія",
+      "pathCursor": "Зміна контуру",
+      "text": "Текст",
+      "fillBucket": "Заповнення",
+      "eyedropper": "Піпетка",
+      "fillColor": "Колір заповнення",
+      "strokeColor": "Колір обведення"
+    }
+  },
+  "toolSettings": {
+    "enablePressure": "Чутливість до натиску",
+    "relativeBrushSize": "Відносний розмір пензля",
+    "brushModes": "Режими пензля",
+    "brushModeNone": "Немає",
+    "brushModeInside": "Всередині",
+    "brushModeOutside": "Ззовні",
+    "cornerRadius": "Радіус кута",
+    "brushSmoothing": "Згладжування пензля",
+    "fontSize": "Розмір шрифту",
+    "eraserSize": "Розмір гумки",
+    "strokeWidth": "Товщина обведення",
+    "pixel": "Піксель",
+    "font": "Шрифт",
+    "brushSize": "Розмір пензля",
+    "gapFillAmount": "Заповнення розривів"
+  },
+  "assetLibrary": {
+    "ariaLabel": "Бібліотека ресурсів",
+    "title": "Бібліотека ресурсів",
+    "addBuiltinAsset": "Додати вбудований ресурс",
+    "uploadAssets": "Завантажити файли",
+    "filterAriaLabel": "фільтр",
+    "filterPlaceholder": "фільтр...",
+    "addToFrame": "Додати до кадру",
+    "addToCanvas": "Додати на полотно"
+  },
+  "timeline": {
+    "ariaLabel": "Таймлайн"
+  },
+  "canvas": {
+    "ariaLabel": "Полотно"
+  },
+  "canvasTransforms": {
+    "onionSkinning": "Калькування",
+    "pan": "Панорамування",
+    "recenter": "Відцентрувати",
+    "zoom": "Масштаб",
+    "zoomIn": "Наблизити",
+    "zoomOut": "Віддалити",
+    "previewPlay": "Попередній перегляд ({{hotkey}})"
+  },
+  "autosaveWarning": {
+    "title": "Завантажити автозбереження?",
+    "delete": "Видалити",
+    "load": "Завантажити"
+  },
+  "editorCore": {
+    "toasts": {
+      "nothingToUndo": "Немає що скасовувати.",
+      "nothingToRedo": "Немає що повторювати.",
+      "noActiveFrameForSound": "Немає активного кадру для додавання звуку.",
+      "couldNotAddFiles": "Не вдалося додати файли до проєкту: {{fileName}}",
+      "importedSuccessfully": "Файл {{name}} успішно імпортовано.",
+      "defaultProjectName": "проєкт",
+      "importingFiles": "Імпортування файлів...",
+      "couldNotImportFiles": "Не вдалося імпортувати файли: {{fileNames}}",
+      "previewWindowOpened": "Вікно попереднього перегляду проєкту відкрито.",
+      "couldNotOpenPreviewWindow": "Не вдалося відкрити вікно попереднього перегляду. Спробуйте вимкнути блокувальник спливаючих вікон!",
+      "exportingWickFile": "Експортування проєкту як .wick файлу...",
+      "couldNotExportWickFile": "Не вдалося експортувати .wick файл.",
+      "savedWickFile": ".wick файл успішно збережено.",
+      "errorSavingWickFile": "Помилка збереження .wick файлу. Спробуйте ще раз.",
+      "exportingGif": "Експортування анімованого GIF...",
+      "savedGif": ".gif файл успішно збережено.",
+      "errorSavingGif": "Помилка збереження .gif файлу. Спробуйте ще раз.",
+      "exportingImageSequence": "Експортування послідовності зображень...",
+      "savedImageSequence": "Послідовність зображень успішно збережено.",
+      "errorSavingImageSequence": "Помилка збереження послідовності зображень. Спробуйте ще раз.",
+      "exportingVideo": "Експортування відео...",
+      "savedVideo": ".mp4 файл успішно створено.",
+      "exportingSvg": "Експортування svg...",
+      "savedSvg": ".svg файл успішно збережено.",
+      "errorSavingSvg": "Помилка збереження .svg файлу. Спробуйте ще раз.",
+      "exportingZip": "Експортування проєкту як ZIP...",
+      "savedZip": ".zip файл успішно збережено.",
+      "errorSavingZip": "Помилка збереження .zip файлу. Спробуйте ще раз.",
+      "exportingHtml": "Експортування проєкту як HTML...",
+      "savedHtml": ".html файл успішно збережено.",
+      "errorSavingHtml": "Помилка збереження .html файлу. Спробуйте ще раз.",
+      "openedSuccessfully": "Файл {{name}} успішно відкрито.",
+      "couldNotOpenProject": "Не вдалося відкрити проєкт.",
+      "couldNotDownloadFromUrl": "Не вдалося завантажити проєкт за посиланням.",
+      "projectUrlInvalid": "URL проєкту недійсний!",
+      "couldNotOpenFromLinkWhitelist": "Не вдалося відкрити проєкт за посиланням! \n URL відсутній у білому списку.",
+      "fillGap": "У фігурі, яку ви намагаєтесь заповнити, є розрив.",
+      "fillSameColor": "Помилка: неможливо заповнити тим самим кольором.",
+      "fillLooping": "Помилка заливки. Зациклення. Спробувати ще раз?",
+      "fillOverlapping": "Помилка заливки. Можливо, фігури накладаються одна на одну?",
+      "fillTooComplex": "Фігура занадто складна.",
+      "fillNoHole": "Немає отвору для заповнення.",
+      "layerLocked": "Шар, на якому ви намагаєтесь малювати, заблоковано.",
+      "layerHidden": "Шар, на якому ви намагаєтесь малювати, приховано.",
+      "noFrameToDrawOnto": "Немає кадру для малювання.",
+      "nothingToCopy": "Немає чого копіювати.",
+      "nothingToDuplicate": "Немає чого дублювати.",
+      "nothingToCut": "Немає чого дублювати.",
+      "nothingInClipboardToPaste": "У буфері обміну немає чого вставити."
+    },
+    "warnings": {
+      "delete": "Видалити",
+      "cancel": "Скасувати",
+      "create": "Створити",
+      "deleteAssetTitle": "Видалити цей файл?",
+      "deleteAssetDescription": "Усі об'єкти проєкту, що використовують цей файл, також будуть видалені.",
+      "deleteScriptTitle": "Видалити скрипт",
+      "deleteScriptDescription": "Видалити скрипт \"{{scriptName}}\" з об’єкта?",
+      "newProjectTitle": "Створити новий проєкт?",
+      "newProjectDescription": "Ви втратите всі незбережені зміни.",
+      "defaultDescription": "Опис не вказано",
+      "defaultTitle": "Заголовок",
+      "accept": "Прийняти"
+    }
+  },
+  "actionMap": {
+    "flipHorizontal": "Віддзеркалити горизонтально",
+    "flipVertical": "Віддзеркалити вертикально",
+    "sendToBack": "На задній план",
+    "sendToFront": "На передній план",
+    "sendBackward": "На один рівень назад",
+    "sendForward": "На один рівень вперед",
+    "booleanUnite": "Об'єднати",
+    "booleanSubtract": "Відняти",
+    "booleanIntersect": "Перетин",
+    "createGroupFromSelection": "Створити групу з виділеного (NYI)",
+    "editCode": "Редагувати код",
+    "editTimeline": "Редагувати таймлайн",
+    "breakApart": "Розділити",
+    "addTweenToSelection": "Додати твін до кадру (NYI)",
+    "makeAnimated": "Зробити анімованим",
+    "makeInteractive": "Зробити інтерактивним",
+    "returnToParentTimeline": "Повернутись до батьківського таймлайна",
+    "undo": "Скасувати",
+    "redo": "Повторити",
+    "copy": "Копіювати",
+    "paste": "Вставити",
+    "delete": "Видалити",
+    "showMoreCanvasActions": "Дії з полотном",
+    "convertSelectionToButton": "Створити кнопку",
+    "convertSelectionToClip": "Створити кліп",
+    "addAssetToCanvas": "Додати на полотно"
+  },
+  "exportMedia": {
+    "exportingTitle": "Експортування {{type}}",
+    "creatingSubtitle": "Створення \"{{name}}\"",
+    "asSequenceSuffix": " як послідовність",
+    "types": {
+      "video": "відео",
+      "gif": "gif",
+      "imageSequence": "послідовності зображень"
+    }
+  },
+  "exportOptions": {
+    "filenamePlaceholder": "Ім'я файлу",
+    "exportTitle": "Експорт",
+    "projectNameAriaLabel": "назва проєкту",
+    "resolutionOptions": "Налаштування роздільності",
+    "exportResolution": "Роздільність",
+    "widthPx": "Ширина (px)",
+    "heightPx": "Висота (px)",
+    "noSound": "Без звуку",
+    "hasSound": "Зі звуком",
+    "notInteractive": "Не інтерактивний",
+    "gif": {
+      "title": "Анімований GIF",
+      "createsFile": "Створює .gif файл",
+      "exportButton": "Експортувати GIF"
+    },
+    "video": {
+      "title": "Відео (Бета)",
+      "createsFile": "Створює .mp4 файл",
+      "exportButton": "Експортувати відео"
+    },
+    "zip": {
+      "title": "ZIP-архів",
+      "fullyInteractive": "Повністю інтерактивний",
+      "worksOnOtherSites": "Працює на інших сайтах",
+      "createsFile": "Експортує .zip файл",
+      "exportButton": "Експортувати ZIP"
+    },
+    "html": {
+      "title": "HTML",
+      "oneClickOpen": "Відкриття в один клік",
+      "easilyShare": "Легко ділитись проєктами",
+      "createsFile": "Експортує .html файл",
+      "exportButton": "Експортувати HTML"
+    },
+    "imageSequence": {
+      "title": "Послідовність зображень",
+      "createsZip": "Створює .zip архів",
+      "exportsPng": "Експортує .png файли",
+      "exportButton": "Експорт зображень"
+    },
+    "imageSvg": {
+      "title": "Зображення SVG",
+      "createsFile": "Створює .svg файл",
+      "notAnimated": "Без анімації",
+      "exportButton": "Експорт SVG"
+    },
+    "audio": {
+      "title": "Аудіо",
+      "createsWav": "Створює .wav файл з усім аудіо в проєкті",
+      "exportButton": "Експортувати аудіо"
+    },
+    "tabs": {
+      "animation": "Анімації",
+      "interactive": "Інтерактив",
+      "audio": "Звуки",
+      "images": "Зображення"
+    }
+  },
+  "projectSettings": {
+    "ariaLabel": "Налаштування проєкту",
+    "defaultName": "Новий проєкт",
+    "name": "Назва",
+    "framerateFps": "Частота кадрів (FPS)",
+    "widthPx": "Ширина (px)",
+    "heightPx": "Висота (px)",
+    "backgroundColor": "Колір фону",
+    "presets": "Пресети",
+    "presetNames": {
+      "default": "Типово",
+      "square": "Квадрат",
+      "hd720": "720p",
+      "hd1080": "1080p",
+      "custom": "Власний"
+    },
+    "cancel": "Скасувати",
+    "apply": "Застосувати"
+  },
+  "editorSettings": {
+    "onionSkinning": "Калькування",
+    "style": "Стиль:",
+    "outlineColors": "Кольори обведення:",
+    "backwardAlt": "Н:",
+    "forwardAlt": "В:",
+    "language": "Мова",
+    "languageUkrainian": "Українська",
+    "languageEnglish": "Англійська"
+  },
+  "keyboardShortcuts": {
+    "actionHeader": "Дія",
+    "hotkey1Header": "Гаряча клавіша 1",
+    "hotkey2Header": "Гаряча клавіша 2",
+    "reset": "Скинути",
+    "resetTooltip": "Скинути гарячі клавіші до стандартних налаштувань.",
+    "cancel": "Скасувати",
+    "apply": "Застосувати",
+    "keyOverwritten": "Гарячу клавішу перезаписано: {{name}}. Будь ласка, скиньте цю комбінацію.",
+    "shortcutKeyAria": "гаряча клавіша"
+  },
+  "settingsModal": {
+    "title": "Налаштування",
+    "projectTab": "Проєкт",
+    "shortcutsTab": "Клавіші",
+    "editorTab": "Редактор"
+  },
+  "builtinLibrary": {
+    "title": "Ббілотека вбудованих ресурсів",
+    "tabs": {
+      "clips": "Кліпи",
+      "sounds": "Звуки"
+    },
+    "assetIconAlt": "Іконка вбудованого ресурсу",
+    "alreadyAdded": "Вже додано",
+    "addAsAsset": "Додати як ресурс"
+  },
+  "makeInteractive": {
+    "title": "Зробити інтерактивним",
+    "clipTitle": "КЛІП",
+    "buttonTitle": "КНОПКА",
+    "canAddAnyCode": "Можна додати будь-який код",
+    "clipOwnTimeline": "Має власний таймлайн",
+    "clipControlTimeline": "Може керувати таймлайном за допомогою коду",
+    "buttonOnly3Frames": "Має лише 3 кадри",
+    "buttonMouseInteractions": "Кадри керуються взаємодією з мишею",
+    "convertToClip": "Перетворити на кліп",
+    "convertToButton": "Перетворити на кнопку",
+    "addToAssetLibrary": "Додати до бібліотеки файлів",
+    "placeholderName": "Назва_елемента"
+  },
+  "makeAnimated": {
+    "title": "Зробити анімованим",
+    "clipTitle": "КЛІП",
+    "canAddAnyCode": "Можна додати будь-який код",
+    "clipOwnTimeline": "Має власний таймлайн",
+    "clipControlTimeline": "Може керувати таймлайном за допомогою коду",
+    "convertToClip": "Перетворити на кліп",
+    "addToAssetLibrary": "Додати до бібліотеки файлів",
+    "placeholderName": "Назва елемента",
+    "defaultName": "Кліп"
+  },
+  "wickCodeEditor": {
+    "option": "Опція",
+    "fontSize": "Розмір шрифту",
+    "editorStyle": "Стиль редактора",
+    "noScriptableObject": "Не вибрано об'єкт для скриптів",
+    "cantFindScript": "Не вдається знайти скрипт...",
+    "title": "Редактор коду",
+    "editing": "редагування {{type}}",
+    "errorLine": "помилка - рядок {{line}}",
+    "textEditorOptions": "Налаштування текстового редактора",
+    "console": "Консоль",
+    "showConsole": "Показати консоль",
+    "showOptions": "Показати налаштування",
+    "clearConsole": "Очистити консоль",
+    "reference": "Довідник"
+  },
+  "addScriptPanel": {
+    "mouse": "Миша",
+    "keyboard": "Клавіатура",
+    "timeline": "Таймлайн"
+  },
+  "inspectorScriptWindow": {
+    "title": "Скрипти",
+    "addScript": "+ додати скрипт"
+  },
+  "scriptWindowRow": {
+    "editTooltip": "Редагувати {{name}}",
+    "deleteTooltip": "Видалити"
+  },
+  "scriptInfo": {
+    "descriptions": {
+      "default": "Один раз, перед усіма іншими скриптами",
+      "mouseclick": "Один раз, коли миша натискається і відпускається над об'єктом",
+      "mousedown": "Щоразу, поки миша натиснута на об'єкті",
+      "mousedrag": "Щоразу, коли миша рухається з натиснутою кнопкою",
+      "mouseenter": "Один раз, коли миша наводиться на об'єкт",
+      "mousehover": "Щоразу, поки миша знаходиться над об'єктом",
+      "mouseleave": "Один раз, коли миша залишає об'єкт",
+      "mousepressed": "Один раз, коли миша натискається на об'єкті",
+      "mousereleased": "Один раз, коли миша відпускається над об'єктом",
+      "keypressed": "Один раз, коли будь-яка клавіша натискається",
+      "keyreleased": "Один раз, коли будь-яка клавіша відпускається",
+      "keydown": "Щоразу, поки будь-яка клавіша натиснута",
+      "load": "Один раз, при вході в кадр",
+      "unload": "Один раз, при виході з кадру",
+      "update": "Щоразу, під час відтворення проєкту"
+    },
+    "reference": {
+      "timeline": {
+        "play": "Відтворює батьківський таймлайн, до якого належить цей об'єкт.",
+        "stop": "Зупиняє батьківський таймлайн, до якого належить цей об'єкт.",
+        "gotoAndPlay": "Переміщує вказівник відтворення до кадру на таймлайні цього об'єкта та відтворює його.",
+        "gotoAndStop": "Переміщує вказівник відтворення до кадру на таймлайні цього об'єкта та зупиняє його.",
+        "gotoNextFrame": "Переміщує вказівник відтворення до наступного кадру на таймлайні цього об'єкта.",
+        "gotoPrevFrame": "Переміщує вказівник відтворення до попереднього кадру на таймлайні цього об'єкта."
+      },
+      "object": {
+        "x": "Позиція об'єкта по осі X. (Зліва направо)",
+        "y": "Позиція об'єкта по осі Y. (Зверху вниз)",
+        "width": "Ширина об'єкта.",
+        "height": "Висота об'єкта.",
+        "scaleX": "Масштаб об'єкта по осі X.",
+        "scaleY": "Масштаб об'єкта по осі Y.",
+        "rotation": "Обертання об'єкта.",
+        "opacity": "Прозорість об'єкта. 0 — повністю прозорий, 1 — повністю непрозорий.",
+        "currentFrameName": "Назва поточного кадру. Повертає порожній рядок, якщо поточний кадр не має назви.",
+        "currentFrameNumber": "Номер поточного кадру, що відображається.",
+        "parent": "Повертає об'єкт, якому належить викликаний об'єкт.",
+        "clone": "Створює клон цього об'єкта, розміщує його на тому ж кадрі та повертає посилання на нього.",
+        "clones": "Масив усіх клонів об'єкта.",
+        "remove": "Видаляє цей об'єкт з проєкту.",
+        "setText": "Змінює вміст текстового об'єкта.",
+        "hits": "Визначає, чи перекриваються хітбокси двох об'єктів, і повертає інформацію про їхнє зіткнення.",
+        "hitsReturns": "Повертає {offsetX, offsetY, overlapX, overlapY, intersections}",
+        "ifHits": "Умова, яку можна використати для перевірки зіткнення двох об'єктів."
+      },
+      "sound": {
+        "playSound": "Відтворює звук з бібліотеки файлів.",
+        "stopAllSounds": "Зупиняє всі відтворювані звуки."
+      },
+      "project": {
+        "width": "Ширина полотна проєкту.",
+        "height": "Висота полотна проєкту.",
+        "framerate": "Частота кадрів проєкту.",
+        "hitTestOptions": "Поточні налаштування перевірки зіткнень.",
+        "hitTestOptionsFn": "Встановлює глобальні налаштування перевірки зіткнень (project.hitTestOptions)."
+      },
+      "random": {
+        "integer": "Повертає випадкове ціле число між мінімумом і максимумом.",
+        "float": "Повертає випадкове дробове число між мінімумом і максимумом.",
+        "choice": "Повертає випадковий елемент із заданого масиву."
+      },
+      "input": {
+        "mouseX": "Позиція миші по осі X на екрані.",
+        "mouseY": "Позиція миші по осі Y на екрані.",
+        "mouseMoveX": "Величина переміщення миші по осі X за останній тік.",
+        "mouseMoveY": "Величина переміщення миші по осі Y за останній тік.",
+        "key": "Остання натиснута клавіша.",
+        "keys": "Масив усіх натиснутих наразі клавіш.",
+        "isMouseDown": "Повертає true, якщо кнопка миші зараз натиснута.",
+        "isKeyDown": "Повертає true, якщо задана клавіша зараз натиснута.",
+        "isKeyDownReturns": "Повертає true, якщо передана клавіша натиснута.",
+        "isKeyJustPressed": "Повертає true, якщо задана клавіша була натиснута протягом останнього тіку.",
+        "isKeyJustPressedReturns": "Повертає true, якщо передана клавіша була натиснута в останньому кадрі.",
+        "ifKey": "Виконується, якщо остання натиснута клавіша дорівнює літері або символу, що перевіряється в умові.",
+        "hideCursor": "Приховує курсор.",
+        "showCursor": "Показує курсор."
+      }
+    }
+  },
+  "simpleProjectSettings": {
+    "title": "Налаштування проєкту",
+    "width": "Ширина",
+    "height": "Висота"
+  },
+  "welcomeMessage": {
+    "title": "Про Wick Editor",
+    "paragraph1": "Wick Editor — це безкоштовний інструмент із відкритим кодом для створення ігор, анімацій і всього, що знаходиться між ними. Його створено таким, щоб він був доступним і простим у використанні та давав змогу створювати мультимедійні проєкти у вебсередовищі.",
+    "paragraph2": "Він поєднує інструменти для роботи з анімацією із середовищем програмування, надихаючись такими проєктами, як HyperCard і Scratch. Редактор було створено у відповідь на зростаючу потребу в доступному інструменті для створення мультимедійного контенту для сучасного вебсередовища.",
+    "createdBy": "Проєкт створили та очолюють Зак Рісполі (Zach Rispoli) і Лука Дамаско (Luca Damasco)."
+  }
+}

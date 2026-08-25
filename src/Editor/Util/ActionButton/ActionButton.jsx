@@ -87,6 +87,7 @@ export default function ActionButton (props) {
 
   return (
       <WickInput
+        containerclassname={props.containerClassName}
         buttonProps={props.buttonProps}
         tooltip={getTooltip()}
         tooltipID={tooltipID}

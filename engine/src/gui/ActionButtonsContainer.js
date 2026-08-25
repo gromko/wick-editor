@@ -17,12 +17,17 @@
  * along with Wick Engine.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// Translation strings for this component live under the
+// "actionButtonsContainer" namespace in locales/<lng>/messages.json
+// (loaded centrally by Wick.GUIElement.Locale — see GUIElementLocale.js).
+// Tooltip keys below reference that namespace, e.g. 'actionButtonsContainer.delete'.
+
 Wick.GUIElement.ActionButtonsContainer = class extends Wick.GUIElement {
     constructor (model) {
         super(model);
 
         this.deleteFrameButton = new Wick.GUIElement.ActionButton(this.model, {
-            tooltip: 'Delete',
+            tooltip: 'actionButtonsContainer.delete',
             icon: 'delete_frame',
             clickFn: () => {
                 this.model.project.deleteSelectedObjects();
@@ -31,7 +36,7 @@ Wick.GUIElement.ActionButtonsContainer = class extends Wick.GUIElement {
         });
 
         this.insertBlankFrameButton = new Wick.GUIElement.ActionButton(this.model, {
-            tooltip: 'Add Frame',
+            tooltip: 'actionButtonsContainer.add_frame',
             icon: 'cut_frame',
             clickFn: () => {
                 this.model.project.insertBlankFrame();
@@ -40,7 +45,7 @@ Wick.GUIElement.ActionButtonsContainer = class extends Wick.GUIElement {
         });
 
         this.addTweenButton = new Wick.GUIElement.ActionButton(this.model, {
-            tooltip: 'Add Tween',
+            tooltip: 'actionButtonsContainer.add_tween',
             icon: 'add_tween',
             clickFn: () => {
                 this.model.project.createTween();
@@ -50,7 +55,7 @@ Wick.GUIElement.ActionButtonsContainer = class extends Wick.GUIElement {
         // Only draw action buttons on bottom if we're not on mobile.
         if (!Wick.GUIElement.IS_MOBILE) {
             this.fillGapsModeButton = new Wick.GUIElement.ActionButton(this.model, {
-                tooltip: 'Gap Fill Mode',
+                tooltip: 'actionButtonsContainer.gap_fill_mode',
                 icon: 'gap_fill_menu_blank_frames',
                 height: 8,
                 width: 16,
@@ -64,7 +69,7 @@ Wick.GUIElement.ActionButtonsContainer = class extends Wick.GUIElement {
             });
 
             this.gridSizeButton = new Wick.GUIElement.ActionButton(this.model, {
-                tooltip: 'Frame Size',
+                tooltip: 'actionButtonsContainer.frame_size',
                 icon: 'frame_size_menu',
                 height: 8,
                 width: 16,

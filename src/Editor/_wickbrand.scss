@@ -25,6 +25,10 @@ $editor-primary-text: white; //#AFAFAF;
 $editor-primary-property-text: $editor-primary-text;
 $editor-primary-outline: #191919;
 
+// Колір фону кнопок у темно-синій панелі MenuBar
+// (трохи світліший відтінок від фону самої панелі #0d1b3e, щоб кнопки читались)
+$menubar-button-bg: #16264f;
+
 $editor-text-input-background: #4F4F4F;
 $editor-text-input-text: #000000;
 

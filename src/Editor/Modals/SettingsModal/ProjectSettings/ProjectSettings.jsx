@@ -18,6 +18,7 @@
  */
 
 import React, { Component } from 'react';
+import { withTranslation } from 'react-i18next';
 import ActionButton from 'Editor/Util/ActionButton/ActionButton';
 import WickInput from 'Editor/Util/WickInput/WickInput';
 
@@ -29,7 +30,7 @@ class ProjectSettings extends Component {
   constructor(props) {
     super(props);
 
-    this.defaultName = "New Project";
+    this.defaultName = this.props.t('projectSettings.defaultName');
 
     // Set minimums for project settings.
     // TODO: Add this to the engine.
@@ -38,24 +39,26 @@ class ProjectSettings extends Component {
     this.projectMinFramerate = 1;
 
     // Create presets.
+    // "id" is a stable, language-independent key used for comparisons and
+    // translation lookups. The displayed label is resolved via t() at render time.
     this.presets = [
       {
-        name: "Default",
+        id: "default",
         width: 720,
         height: 480
       },
       {
-        name: "Square",
+        id: "square",
         width: 600,
         height: 600
       },
       {
-        name: "720p",
+        id: "hd720",
         width: 1280,
         height: 720
       },
       {
-        name: "1080p",
+        id: "hd1080",
         width: 1920,
         height: 1080
       }
@@ -88,10 +91,14 @@ class ProjectSettings extends Component {
   getPreset = (width, height) => {
     let possiblePreset = this.presets.find(preset => preset.width === width);
     if (possiblePreset && possiblePreset.height === height) {
-      return possiblePreset.name;
+      return possiblePreset.id;
     } else {
-      return "Custom";
+      return "custom";
     }
+  }
+
+  getPresetLabel = (presetId) => {
+    return this.props.t(`projectSettings.presetNames.${presetId}`);
   }
 
   setPreset = (width, height) => {
@@ -167,10 +174,11 @@ class ProjectSettings extends Component {
   }
 
   renderNameObject = () => {
+    const { t } = this.props;
     return (
       <div className={classNames("project-setting-element", this.props.isMobile && "mobile")}>
         <label htmlFor="project name" className="project-settings-property-label">
-          Name
+          {t('projectSettings.name')}
         </label>
         <div className="project-settings-property-container">
           <WickInput
@@ -186,10 +194,11 @@ class ProjectSettings extends Component {
   }
 
   renderFramerateObject = () => {
+    const { t } = this.props;
     return (
       <div className={classNames("project-setting-element", this.props.isMobile && "mobile")}>
         <label htmlFor="project framerate" className="project-settings-property-label">
-        Framerate (FPS)
+        {t('projectSettings.framerateFps')}
         </label>
         <div className="project-settings-property-container">
           <WickInput
@@ -204,12 +213,13 @@ class ProjectSettings extends Component {
   }
   
   renderWidthObject = () => {
+    const { t } = this.props;
     return (
       <div className={classNames("project-setting-element", this.props.isMobile && "mobile")}>
         <div className="project-settings-property-container project-settings-size-input-container">
           <span>
             <label htmlFor="project width" className="project-settings-property-label">
-              Width (px)
+              {t('projectSettings.widthPx')}
             </label>
             <WickInput
             id="project width"
@@ -223,7 +233,7 @@ class ProjectSettings extends Component {
           <span><div className="project-settings-split">x</div></span>
           <span>
             <label htmlFor="project height" className="project-settings-property-label">
-              Height (px)
+              {t('projectSettings.heightPx')}
             </label>
             <WickInput
               id="project height"
@@ -240,11 +250,12 @@ class ProjectSettings extends Component {
   }
 
   renderSizeObjectMobile = () => {
+    const { t } = this.props;
     return (
       <div className={classNames("project-setting-element", "mobile")}>
         <div className="project-settings-property-container project-settings-size-input-container mobile">
           <label htmlFor="projectWidth" className="project-settings-property-label mobile-size">
-            Width (px)
+            {t('projectSettings.widthPx')}
           </label>
           <WickInput
             id="projectWidth"
@@ -256,7 +267,7 @@ class ProjectSettings extends Component {
         </div>
         <div className="project-settings-property-container project-settings-size-input-container mobile">
           <label htmlFor="projectHeight" className="project-settings-property-label mobile-size">
-            Height (px)
+            {t('projectSettings.heightPx')}
           </label>
           <WickInput
             id="projectHeight"
@@ -271,10 +282,11 @@ class ProjectSettings extends Component {
   }
 
   renderBackgroundColorObject = () => {
+    const { t } = this.props;
     return (
       <div className={classNames("project-setting-element", this.props.isMobile && "mobile")}>
         <label htmlFor="project-background-color-picker" className="project-settings-property-label">
-          Background Color
+          {t('projectSettings.backgroundColor')}
         </label>
         <div className="project-settings-property-container">
           <WickInput
@@ -297,7 +309,7 @@ class ProjectSettings extends Component {
     this.setState({
       width: preset.width,
       height: preset.height,
-      preset: preset.name,
+      preset: preset.id,
     });
   }
 
@@ -310,9 +322,9 @@ class ProjectSettings extends Component {
             buttonProps={{"aria-labelledby": "resolution-presets"}}
             key={"preset" + i}
             className="project-settings-modal-preset"
-            text={preset.name}
-            textClassName={classNames("project-settings-modal-preset-text", this.state.preset === preset.name && "selected")}
-            color={this.state.preset === preset.name ? "green" : "tool"} 
+            text={this.getPresetLabel(preset.id)}
+            textClassName={classNames("project-settings-modal-preset-text", this.state.preset === preset.id && "selected")}
+            color={this.state.preset === preset.id ? "green" : "tool"} 
             action={() => this.selectPreset(preset)}/>
           );
         })}
@@ -321,10 +333,11 @@ class ProjectSettings extends Component {
   }
 
   renderPresets = () => {
+    const { t } = this.props;
     return (
       <div className="project-setting-element project-settings-presets-container">
         <label id="resolution-presets" className="project-settings-property-label">
-          Presets
+          {t('projectSettings.presets')}
         </label>
         <div className="project-settings-presets-body-container">
           {this.renderPresetBoxes()}
@@ -334,20 +347,21 @@ class ProjectSettings extends Component {
   }
 
   renderPresetsMobile = () => {
+    const { t } = this.props;
     let options = [];
     for (let i = 0; i < this.presets.length; i++) {
-      options.push({value: this.presets[i].name, label: this.presets[i].name});
+      options.push({value: this.presets[i].id, label: this.getPresetLabel(this.presets[i].id)});
     }
     return (
       <div className="project-setting-element project-settings-presets-container">
         <div className="project-settings-property-label">
-          Presets
+          {t('projectSettings.presets')}
         </div>
         <div className="project-settings-presets-body-container">
           <WickInput 
             type="select"
             value={this.state.preset}
-            onChange={(option) => this.selectPreset(this.presets.find(preset => option.value === preset.name))}
+            onChange={(option) => this.selectPreset(this.presets.find(preset => option.value === preset.id))}
             options={options}
           />
         </div>
@@ -356,12 +370,13 @@ class ProjectSettings extends Component {
   }
 
   renderSizeObject = () => {
+    const { t } = this.props;
     return (
       <div className={classNames("project-setting-element", this.props.isMobile && "mobile")}>
         <div className="project-settings-property-container project-settings-size-input-container">
           <span>
             <label htmlFor="project width" className="project-settings-property-label">
-              Width (px)
+              {t('projectSettings.widthPx')}
             </label>
             <WickInput
             id="project width"
@@ -375,7 +390,7 @@ class ProjectSettings extends Component {
           <span><div className="project-settings-split">x</div></span>
           <span>
             <label htmlFor="project height" className="project-settings-property-label">
-              Height (px)
+              {t('projectSettings.heightPx')}
             </label>
             <WickInput
               id="project height"
@@ -392,6 +407,7 @@ class ProjectSettings extends Component {
   }
 
   renderDesktop = () => {
+    const { t } = this.props;
     return (
         <div id="project-settings-interior-content">
           {/* Body */}
@@ -415,7 +431,7 @@ class ProjectSettings extends Component {
                   className="project-settings-modal-button"
                   color='gray'
                   action={this.resetAndToggle}
-                  text="Cancel"
+                  text={t('projectSettings.cancel')}
                   />
               </div>
               <div className="project-settings-modal-accept">
@@ -423,7 +439,7 @@ class ProjectSettings extends Component {
                   className="project-settings-modal-button"
                   color='green'
                   action={this.acceptProjectSettings}
-                  text="Apply"
+                  text={t('projectSettings.apply')}
                   />
               </div>
           </div>
@@ -432,6 +448,7 @@ class ProjectSettings extends Component {
   }
 
   renderMobile = () => {
+    const { t } = this.props;
     return (
       <div id="project-settings-interior-content">
         {/* Body */}
@@ -459,7 +476,7 @@ class ProjectSettings extends Component {
               className="project-settings-modal-button"
               color='gray'
               action={this.resetAndToggle}
-              text="Cancel"
+              text={t('projectSettings.cancel')}
             />
           </div>
           <div className="project-settings-modal-accept mobile">
@@ -467,7 +484,7 @@ class ProjectSettings extends Component {
               className="project-settings-modal-button"
               color='green'
               action={this.acceptProjectSettings}
-              text="Apply"
+              text={t('projectSettings.apply')}
             />
           </div>
         </div>
@@ -485,4 +502,4 @@ class ProjectSettings extends Component {
   }
 }
 
-export default ProjectSettings
+export default withTranslation()(ProjectSettings)

@@ -1,31 +1,16 @@
 /*
- * Copyright 2020 WICKLETS LLC
- *
- * This file is part of Wick Editor.
- *
- * Wick Editor is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Wick Editor is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Wick Editor.  If not, see <https://www.gnu.org/licenses/>.
- */
-
+Copyright 2020 WICKLETS LLC
+This file is part of Wick Editor.
+... (ліцензія)
+*/
 import React, { Component } from 'react';
+import { withTranslation } from 'react-i18next';
 import WickModal from 'Editor/Modals/WickModal/WickModal';
 import TabbedInterface from 'Editor/Util/TabbedInterface/TabbedInterface';
 import ProjectSettings from './ProjectSettings/ProjectSettings';
 import EditorSettings from './EditorSettings/EditorSettings';
 import KeyboardShortcuts from './KeyboardShortcuts/KeyboardShortcuts';
-
 import './_settingsmodal.scss';
-
 var classNames = require("classnames");
 
 class SettingsModal extends Component {
@@ -48,17 +33,18 @@ class SettingsModal extends Component {
   }
 
   renderDesktop = () => {
+    const { t } = this.props;
     return (
       <WickModal
-      open={this.props.open} 
-      toggle={this.props.toggle}
-      className="settings-modal-container"
-      overlayClassName="settings-modal-overlay">
+        open={this.props.open}
+        toggle={this.props.toggle}
+        className="settings-modal-container"
+        overlayClassName="settings-modal-overlay" >
         <div className="settings-modal-title">
-          Settings
+          {t('settingsModal.title')}
         </div>
         <div className="settings-modal-body">
-          <TabbedInterface tabNames={["Project", "Shortcuts", "Editor"]} >
+          <TabbedInterface tabNames={[t('settingsModal.projectTab'), t('settingsModal.shortcutsTab'), t('settingsModal.editorTab')]} >
             <ProjectSettings
               project={this.props.project}
               updateProjectSettings={this.props.updateProjectSettings}
@@ -73,10 +59,10 @@ class SettingsModal extends Component {
               customHotKeys={this.props.customHotKeys}
               keyMap={this.props.keyMap}
               keyMapGroups={this.props.keyMapGroups}
-              toast={this.props.toast} 
+              toast={this.props.toast}
               toggle={this.props.toggle}
               createCombinedHotKeyMap={this.props.createCombinedHotKeyMap}/>
-            <EditorSettings 
+            <EditorSettings
               colorPickerType={this.props.colorPickerType}
               changeColorPickerType={this.props.changeColorPickerType}
               updateLastColors={this.props.updateLastColors}
@@ -92,17 +78,18 @@ class SettingsModal extends Component {
   }
 
   renderMobile = () => {
+    const { t } = this.props;
     return (
       <WickModal
-      open={this.props.open} 
-      toggle={this.props.toggle}
-      className={classNames("settings-modal-container", this.props.isMobile && "mobile")}
-      overlayClassName="settings-modal-overlay">
+        open={this.props.open}
+        toggle={this.props.toggle}
+        className={classNames("settings-modal-container", this.props.isMobile && "mobile")}
+        overlayClassName="settings-modal-overlay" >
         <div className="settings-modal-title">
-          Settings
+          {t('settingsModal.title')}
         </div>
         <div className="settings-modal-body">
-          <TabbedInterface tabNames={["Project", "Editor"]} >
+          <TabbedInterface tabNames={[t('settingsModal.projectTab'), t('settingsModal.editorTab')]} >
             <ProjectSettings
               isMobile={true}
               project={this.props.project}
@@ -111,11 +98,11 @@ class SettingsModal extends Component {
               changeColorPickerType={this.props.changeColorPickerType}
               updateLastColors={this.props.updateLastColors}
               lastColorsUsed={this.props.lastColorsUsed}/>
-            <EditorSettings 
+            <EditorSettings
               isMobile={true}
               colorPickerType={this.props.colorPickerType}
               changeColorPickerType={this.props.changeColorPickerType}
-              updateLastColors={this.props.updateLastColors}
+              updateLastColors={this.props.updateLastColors} 
               lastColorsUsed={this.props.lastColorsUsed}
               getToolSetting={this.props.getToolSetting}
               setToolSetting={this.props.setToolSetting}
@@ -136,4 +123,4 @@ class SettingsModal extends Component {
   }
 }
 
-export default SettingsModal
+export default withTranslation()(SettingsModal);

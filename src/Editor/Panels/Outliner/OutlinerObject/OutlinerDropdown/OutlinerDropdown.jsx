@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { withTranslation } from 'react-i18next';
 
 import './_outlinerdropdown.scss';
 
@@ -7,19 +8,20 @@ import emptyDropdownIcon from 'resources/outliner-icons/empty_dropdown.svg';
 
 class OutlinerDropdown extends Component {
   render() {
+    const { t } = this.props;
     let collapsed = this.props.collapsed ? "collapsed" : "expanded";
     return (
       this.props.empty ? 
         <img
           className="outliner-dropdown-icon empty"
-          alt="dropdown-icon"
+          alt={t('outliner.dropdownIconAlt')}
           src={emptyDropdownIcon}
         />
         :
         <input
           type="image" 
           className={"outliner-dropdown-icon " + collapsed}
-          alt="dropdown-icon"
+          alt={t('outliner.dropdownIconAlt')}
           src={dropdownIcon}
           onClick={(e) => {
             e.stopPropagation();
@@ -30,7 +32,7 @@ class OutlinerDropdown extends Component {
   }
 }
 
-export default OutlinerDropdown;
+export default withTranslation()(OutlinerDropdown);
 
 /*  <button
         className="outliner-dropdown"

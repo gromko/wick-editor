@@ -23,6 +23,7 @@ $info-left-margin: 12px;
 
 .export-modal-body {
   width: 450px;
+  height: 480px;
   min-width: 240px;  
   padding: 20px; 
   transition: height .5s, width .5s;
@@ -107,7 +108,7 @@ $info-left-margin: 12px;
 }
 
 .export-object-info {
-  height: 120px; 
+  height: 180px; 
 }
 
 .export-object-info-off {

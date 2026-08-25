@@ -132,6 +132,9 @@ gulp.task("default", function() {
       'src/view/View.Frame.js',
       'src/view/View.Path.js',
       'src/gui/GUIElement.js',
+      'src/gui/GUIElementLocale.js',
+      'src/locales/en/messages.js',
+      'src/locales/uk/messages.js',
       'src/gui/Button.js',
       'src/gui/Ghost.js',
       'src/gui/Icons.js',
@@ -168,6 +171,7 @@ gulp.task("default", function() {
     .pipe(concat('wickengine.js'))
     .pipe(header('/*Wick Engine https://github.com/Wicklets/wick-engine*/\nvar WICK_ENGINE_BUILD_VERSION = "' + buildString + '";\n'))
     .pipe(gulp.dest('dist'))
+    .pipe(gulp.dest('../public/corelibs/wick-engine'))
     .on('end', () => {
       /* Generate empty HTML file ready for wick projects to be injected into */
       var blankHTML = fs.readFileSync('src/export/html/project.html', 'utf8');
@@ -175,6 +179,7 @@ gulp.task("default", function() {
       var engineSRCSafe = engineSRC.replace(/\$/g, "$$$"); // http://forums.mozillazine.org/viewtopic.php?f=19&t=2182187
       blankHTML = blankHTML.replace('<!--INJECT_WICKENGINE_HERE-->', engineSRCSafe);
       fs.writeFileSync('dist/emptyproject.html', blankHTML);
+      fs.writeFileSync('../public/corelibs/wick-engine/emptyproject.html', blankHTML);
 
       /* Copy ZIP export resources to dist folder */
       var zipindex = fs.readFileSync('src/export/zip/index.html', 'utf8');

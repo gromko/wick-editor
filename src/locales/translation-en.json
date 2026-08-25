@@ -1,0 +1,541 @@
+{
+  "menuBar": {
+    "ariaLabel": "Menu Bar",
+    "new": "new",
+    "open": "open",
+    "export": "export",
+    "save": "save",
+    "supportUs": "about us",
+    "editorInfo": "Editor Information",
+    "editorSettings": "Editor Settings",
+    "defaultProjectName": "My Project"
+  },
+  "inspector": {
+    "ariaLabel": "Inspector Panel",
+    "title": "Inspector",
+    "selectionTypes": {
+      "frame": "Frame",
+      "multiframe": "Multi-Frame",
+      "tween": "Tween",
+      "multitween": "Multi-Tween",
+      "clip": "Clip",
+      "button": "Button",
+      "path": "Path",
+      "text": "Text",
+      "image": "Image",
+      "multipath": "Multi-Path",
+      "multiclip": "Multi-Clip",
+      "multitimeline": "Multi-Timeline",
+      "multicanvas": "Multi-Canvas",
+      "imageasset": "Image Asset",
+      "soundasset": "Sound Asset",
+      "multiassetmixed": "Multi-Asset",
+      "multisoundasset": "Multi-Asset Sound",
+      "multiimageasset": "Multi-Asset Image",
+      "unknown": ""
+    },
+    "tooltips": {
+      "strokeWidth": "Stroke Width",
+      "fill": "Fill",
+      "opacity": "Opacity",
+      "stroke": "Stroke",
+      "weight": "Weight",
+      "fontFamily": "Font Family",
+      "style": "Style",
+      "fontSize": "Font Size",
+      "name": "Name",
+      "file": "File",
+      "length": "Length",
+      "originX": "Origin X",
+      "originY": "Origin Y",
+      "x": "X",
+      "y": "Y",
+      "width": "Width",
+      "height": "Height",
+      "scaleW": "Scale W",
+      "scaleH": "Scale H",
+      "rotation": "Rotation",
+      "sound": "Sound",
+      "volume": "Volume",
+      "startMs": "Start (ms)",
+      "animation": "Animation",
+      "frame": "Frame",
+      "synced": "Synced",
+      "easingType": "Easing Type",
+      "fullRotations": "Full Rotations"
+    },
+    "options": {
+      "noSound": "No Sound",
+      "fontStyleNormal": "normal",
+      "fontStyleItalic": "italic",
+      "fontWeightThin": "thin",
+      "fontWeightExtraLight": "extra light",
+      "fontWeightLight": "light",
+      "fontWeightNormal": "normal",
+      "fontWeightMedium": "medium",
+      "fontWeightSemiBold": "semi bold",
+      "fontWeightBold": "bold",
+      "fontWeightExtraBold": "extra bold",
+      "fontWeightBlack": "black"
+    },
+    "placeholders": {
+      "noName": "no_name"
+    }
+  },
+  "outliner": {
+    "ariaLabel": "Outliner",
+    "title": "Outliner",
+    "tooltips": {
+      "display": "Display"
+    },
+    "hideOutliner": "Hide Outliner",
+    "showOutliner": "Show Outliner",
+    "objectTypes": {
+      "layer": "Layer",
+      "frame": "Frame",
+      "path": "Path",
+      "button": "Button",
+      "clip": "Clip",
+      "text": "Text",
+      "image": "Image"
+    },
+    "widgets": {
+      "hideObjects": "Hide {{type}} Objects",
+      "showObjects": "Show {{type}} Objects"
+    },
+    "selectObjectAriaLabel": "select outliner object",
+    "hideLayer": "Hide Layer",
+    "lockLayer": "Lock Layer",
+    "editTimeline": "Edit Timeline",
+    "soundIconAlt": "sound",
+    "scriptIconAlt": "script",
+    "dropdownIconAlt": "dropdown-icon",
+    "defaultLayerName": "Layer",
+    "defaultLayerNameNumbered": "Layer {{number}}"
+  },
+  "toolbox": {
+    "ariaLabel": "Toolbox",
+    "tooltips": {
+      "cursor": "Cursor",
+      "brush": "Brush",
+      "pencil": "Pencil",
+      "eraser": "Eraser",
+      "rectangle": "Rectangle",
+      "ellipse": "Ellipse",
+      "line": "Line",
+      "pathCursor": "Path Cursor",
+      "text": "Text",
+      "fillBucket": "Fill Bucket",
+      "eyedropper": "Eyedropper",
+      "fillColor": "Fill Color",
+      "strokeColor": "Stroke Color"
+    }
+  },
+  "toolSettings": {
+    "enablePressure": "Enable Pressure",
+    "relativeBrushSize": "Relative Brush Size",
+    "brushModes": "Brush Modes",
+    "brushModeNone": "None",
+    "brushModeInside": "Inside",
+    "brushModeOutside": "Outside",
+    "cornerRadius": "Corner Radius",
+    "brushSmoothing": "Brush Smoothing",
+    "fontSize": "Font Size",
+    "eraserSize": "Eraser Size",
+    "strokeWidth": "Stroke Width",
+    "pixel": "Pixel",
+    "font": "Font",
+    "brushSize": "Brush Size",
+    "gapFillAmount": "Gap Fill Amount"
+  },
+  "assetLibrary": {
+    "ariaLabel": "Asset Library",
+    "title": "Asset Library",
+    "addBuiltinAsset": "Add Builtin Asset",
+    "uploadAssets": "Upload Assets",
+    "filterAriaLabel": "filter",
+    "filterPlaceholder": "filter...",
+    "addToFrame": "Add to Frame",
+    "addToCanvas": "Add to Canvas"
+  },
+  "timeline": {
+    "ariaLabel": "Timeline"
+  },
+  "canvas": {
+    "ariaLabel": "Canvas"
+  },
+  "canvasTransforms": {
+    "onionSkinning": "Onion Skinning",
+    "pan": "Pan",
+    "recenter": "Recenter",
+    "zoom": "Zoom",
+    "zoomIn": "Zoom In",
+    "zoomOut": "Zoom Out",
+    "previewPlay": "Preview Play ({{hotkey}})"
+  },
+  "autosaveWarning": {
+    "title": "Load Autosave?",
+    "delete": "Delete",
+    "load": "Load"
+  },
+  "editorCore": {
+    "toasts": {
+      "nothingToUndo": "Nothing to undo.",
+      "nothingToRedo": "Nothing to redo.",
+      "noActiveFrameForSound": "No active frame to add sound to.",
+      "couldNotAddFiles": "Could not add files to project: {{fileName}}",
+      "importedSuccessfully": "Imported {{name}} successfully.",
+      "defaultProjectName": "project",
+      "importingFiles": "Importing files...",
+      "couldNotImportFiles": "Could not import files: {{fileNames}}",
+      "previewWindowOpened": "Project preview window opened.",
+      "couldNotOpenPreviewWindow": "Could not open a preview window. Try disabling your popup blocker!",
+      "exportingWickFile": "Exporting project as a .wick file...",
+      "couldNotExportWickFile": "Could not export .wick file.",
+      "savedWickFile": "Successfully saved .wick file.",
+      "errorSavingWickFile": "Error saving .wick file. Please try again.",
+      "exportingGif": "Exporting animated GIF...",
+      "savedGif": "Successfully saved .gif file.",
+      "errorSavingGif": "Error saving .gif file. Please try again.",
+      "exportingImageSequence": "Exporting image sequence...",
+      "savedImageSequence": "Successfully saved image sequence.",
+      "errorSavingImageSequence": "Error saving image sequence. Please try again.",
+      "exportingVideo": "Exporting video...",
+      "savedVideo": "Successfully created .mp4 file.",
+      "exportingSvg": "Exporting svg...",
+      "savedSvg": "Successfully saved .svg file.",
+      "errorSavingSvg": "Error saving .svg file. Please try again.",
+      "exportingZip": "Exporting project as ZIP...",
+      "savedZip": "Successfully saved .zip file.",
+      "errorSavingZip": "Error saving .zip file. Please try again.",
+      "exportingHtml": "Exporting project as HTML...",
+      "savedHtml": "Successfully saved .html file.",
+      "errorSavingHtml": "Error saving .html file. Please try again.",
+      "openedSuccessfully": "Opened {{name}} successfully.",
+      "couldNotOpenProject": "Could not open project.",
+      "couldNotDownloadFromUrl": "Could not download project from URL.",
+      "projectUrlInvalid": "Project URL is invalid!",
+      "couldNotOpenFromLinkWhitelist": "Could not open project from link! \\n URL is not on whitelist.",
+      "fillGap": "The shape you are trying to fill has a gap.",
+      "fillSameColor": "Error: Can't fill the same color.",
+      "fillLooping": "Fill bucket failed. Error: Looping. Try Again?",
+      "fillOverlapping": "Fill bucket failed. Overlapping shape above?",
+      "fillTooComplex": "Shape is too complex.",
+      "fillNoHole": "There is no hole to fill.",
+      "layerLocked": "The layer you are trying to draw onto is locked.",
+      "layerHidden": "The layer you are trying to draw onto is hidden.",
+      "noFrameToDrawOnto": "There is no frame to draw onto.",
+      "nothingToCopy": "There is nothing to copy.",
+      "nothingToDuplicate": "There is nothing to duplicate.",
+      "nothingToCut": "There is nothing to duplicate.",
+      "nothingInClipboardToPaste": "There is nothing in the clipboard to paste."
+    },
+    "warnings": {
+      "delete": "Delete",
+      "cancel": "Cancel",
+      "create": "Create",
+      "deleteAssetTitle": "Delete this asset?",
+      "deleteAssetDescription": "Any objects in the project using this asset will also be deleted.",
+      "deleteScriptTitle": "Delete Script",
+      "deleteScriptDescription": "Delete Script: \"{{scriptName}}\" from the object?",
+      "newProjectTitle": "Create New Project?",
+      "newProjectDescription": "You will lose any unsaved changes.",
+      "defaultDescription": "No Description Given",
+      "defaultTitle": "Title",
+      "accept": "Accept"
+    }
+  },
+  "actionMap": {
+    "flipHorizontal": "Flip Horizontal",
+    "flipVertical": "Flip Vertical",
+    "sendToBack": "Send to Back",
+    "sendToFront": "Send To Front",
+    "sendBackward": "Send Backward",
+    "sendForward": "Send Forward",
+    "booleanUnite": "Unite",
+    "booleanSubtract": "Subtract",
+    "booleanIntersect": "Intersect",
+    "createGroupFromSelection": "Create Group from Selection (NYI)",
+    "editCode": "Edit Code",
+    "editTimeline": "Edit Timeline",
+    "breakApart": "Break Apart",
+    "addTweenToSelection": "Add Tween to Frame (NYI)",
+    "makeAnimated": "Make Animated",
+    "makeInteractive": "Make Interactive",
+    "returnToParentTimeline": "Return to Parent Timeline",
+    "undo": "Undo",
+    "redo": "Redo",
+    "copy": "Copy",
+    "paste": "Paste",
+    "delete": "Delete",
+    "showMoreCanvasActions": "Canvas Actions",
+    "convertSelectionToButton": "Make Button",
+    "convertSelectionToClip": "Make Clip",
+    "addAssetToCanvas": "Add To Canvas"
+  },
+  "exportMedia": {
+    "exportingTitle": "Exporting {{type}}",
+    "creatingSubtitle": "Creating \"{{name}}\"",
+    "asSequenceSuffix": " as sequence",
+    "types": {
+      "video": "video",
+      "gif": "gif",
+      "imageSequence": "image sequence"
+    }
+  },
+  "exportOptions": {
+    "filenamePlaceholder": "Filename",
+    "exportTitle": "Export",
+    "projectNameAriaLabel": "project name",
+    "resolutionOptions": "Resolution Options",
+    "exportResolution": "Export Resolution",
+    "widthPx": "Width (px)",
+    "heightPx": "Height (px)",
+    "noSound": "No Sound",
+    "hasSound": "Has Sound",
+    "notInteractive": "Not Interactive",
+    "gif": {
+      "title": "Animated GIF",
+      "createsFile": "Creates a .gif file",
+      "exportButton": "Export GIF"
+    },
+    "video": {
+      "title": "Video (Beta)",
+      "createsFile": "Creates an .mp4 file",
+      "exportButton": "Export Video (Beta)"
+    },
+    "zip": {
+      "title": "ZIP Archive",
+      "fullyInteractive": "Fully Interactive",
+      "worksOnOtherSites": "Works on other sites",
+      "createsFile": "Exports a .zip file",
+      "exportButton": "Export ZIP"
+    },
+    "html": {
+      "title": "HTML",
+      "oneClickOpen": "1-Click open",
+      "easilyShare": "Easily share projects",
+      "createsFile": "Exports a .html file",
+      "exportButton": "Export HTML"
+    },
+    "imageSequence": {
+      "title": "Image Sequence",
+      "createsZip": "Creates a .zip archive",
+      "exportsPng": "Exports .png files",
+      "exportButton": "Export Image Sequence"
+    },
+    "imageSvg": {
+      "title": "Image SVG",
+      "createsFile": "Creates a .svg file",
+      "notAnimated": "Not Animated",
+      "exportButton": "Export Image SVG"
+    },
+    "audio": {
+      "title": "Audio",
+      "createsWav": "Creates a .wav file of all audio in the project",
+      "exportButton": "Export Audio"
+    },
+    "tabs": {
+      "animation": "Animation",
+      "interactive": "Interactive",
+      "audio": "Audio",
+      "images": "Images"
+    }
+  },
+  "projectSettings": {
+    "ariaLabel": "Project Settings",
+    "defaultName": "New Project",
+    "name": "Name",
+    "framerateFps": "Framerate (FPS)",
+    "widthPx": "Width (px)",
+    "heightPx": "Height (px)",
+    "backgroundColor": "Background Color",
+    "presets": "Presets",
+    "presetNames": {
+      "default": "Default",
+      "square": "Square",
+      "hd720": "720p",
+      "hd1080": "1080p",
+      "custom": "Custom"
+    },
+    "cancel": "Cancel",
+    "apply": "Apply"
+  },
+  "editorSettings": {
+    "onionSkinning": "Onion Skinning",
+    "style": "Style:",
+    "outlineColors": "Outline Colors:",
+    "backwardAlt": "B:",
+    "forwardAlt": "F:",
+    "language": "Language",
+    "languageUkrainian": "Ukrainian",
+    "languageEnglish": "English"
+  },
+  "keyboardShortcuts": {
+    "actionHeader": "Action",
+    "hotkey1Header": "Hotkey 1",
+    "hotkey2Header": "Hotkey 2",
+    "reset": "Reset",
+    "resetTooltip": "Reset hotkeys to default settings.",
+    "cancel": "Cancel",
+    "apply": "Apply",
+    "keyOverwritten": "Key Command Overwritten: {{name}}. Please reset this key command.",
+    "shortcutKeyAria": "shortcut key"
+  },
+  "settingsModal": {
+    "title": "Settings",
+    "projectTab": "Project",
+    "shortcutsTab": "Shortcuts",
+    "editorTab": "Editor"
+  },
+  "builtinLibrary": {
+    "title": "Builtin Library (Beta)",
+    "tabs": {
+      "clips": "Clips",
+      "sounds": "Sounds"
+    },
+    "assetIconAlt": "Builtin Asset Icon",
+    "alreadyAdded": "Already Added",
+    "addAsAsset": "Add as Asset"
+  },
+  "makeInteractive": {
+    "title": "Make Interactive",
+    "clipTitle": "CLIP",
+    "buttonTitle": "BUTTON",
+    "canAddAnyCode": "Can add any code",
+    "clipOwnTimeline": "Has its own timeline",
+    "clipControlTimeline": "Can control timeline with code",
+    "buttonOnly3Frames": "Only has 3 frames",
+    "buttonMouseInteractions": "Frames controlled by mouse interactions",
+    "convertToClip": "Convert to Clip",
+    "convertToButton": "Convert to Button",
+    "addToAssetLibrary": "Add to asset library",
+    "placeholderName": "Item_Name"
+  },
+  "makeAnimated": {
+    "title": "Make Animated",
+    "clipTitle": "CLIP",
+    "canAddAnyCode": "Can add any code",
+    "clipOwnTimeline": "Has its own timeline",
+    "clipControlTimeline": "Can control timeline with code",
+    "convertToClip": "Convert to Clip",
+    "addToAssetLibrary": "Add to asset library",
+    "placeholderName": "Item Name",
+    "defaultName": "Clip"
+  },
+  "wickCodeEditor": {
+    "option": "Option",
+    "fontSize": "Font Size",
+    "editorStyle": "Editor Style",
+    "noScriptableObject": "No Scriptable Object Selected",
+    "cantFindScript": "Can't Find Script...",
+    "title": "Code Editor",
+    "editing": "editing {{type}}",
+    "errorLine": "error - line {{line}}",
+    "textEditorOptions": "Text Editor Options",
+    "console": "Console",
+    "showConsole": "Show Console",
+    "showOptions": "Show Options",
+    "clearConsole": "Clear Console",
+    "reference": "Reference"
+  },
+  "addScriptPanel": {
+    "mouse": "Mouse",
+    "keyboard": "Keyboard",
+    "timeline": "Timeline"
+  },
+  "inspectorScriptWindow": {
+    "title": "Scripts",
+    "addScript": "+ add script"
+  },
+  "scriptWindowRow": {
+    "editTooltip": "Edit {{name}}",
+    "deleteTooltip": "Delete"
+  },
+  "scriptInfo": {
+    "descriptions": {
+      "default": "Once, before all other scripts",
+      "mouseclick": "Once, when the mouse goes down then up over an object",
+      "mousedown": "Every tick, when the mouse is down on the object",
+      "mousedrag": "Every tick, when the mouse moves while down",
+      "mouseenter": "Once, when the mouse enters the object",
+      "mousehover": "Every tick, when the mouse is over the object",
+      "mouseleave": "Once, when the mouse leaves the object",
+      "mousepressed": "Once, when the mouse presses down on the object",
+      "mousereleased": "Once, when the mouse is released over the object",
+      "keypressed": "Once, when any key is pushed down",
+      "keyreleased": "Once, when any key is released",
+      "keydown": "Every tick, when any key is down",
+      "load": "Once, when the frame is entered",
+      "unload": "Once, when the frame is exited",
+      "update": "Every tick, while the project is playing"
+    },
+    "reference": {
+      "timeline": {
+        "play": "Plays the parent timeline that this object belongs to.",
+        "stop": "Stops the parent timeline that this object belongs to.",
+        "gotoAndPlay": "Moves the playhead to a frame on the timeline that this object belongs to, and plays that timeline.",
+        "gotoAndStop": "Moves the playhead to a frame on the timeline that this object belongs to, and stops that timeline.",
+        "gotoNextFrame": "Moves the playhead to the next frame on the timeline that this object belongs to.",
+        "gotoPrevFrame": "Moves the playhead to the previous frame on the timeline that this object belongs to."
+      },
+      "object": {
+        "x": "The x position of the object. (Left to Right)",
+        "y": "The y position of the object. (Up to Down)",
+        "width": "The width of the object.",
+        "height": "The height of the object.",
+        "scaleX": "The scale of the object on the x-axis.",
+        "scaleY": "The scale of the object on the y-axis.",
+        "rotation": "The rotation of the object.",
+        "opacity": "The opacity of the object. 0 is completely transparent, 1 is completely opaque.",
+        "currentFrameName": "The name of the current frame. Returns empty string if the current frame does not have a name.",
+        "currentFrameNumber": "The number of the current frame being displayed.",
+        "parent": "Returns the object that owns the calling object.",
+        "clone": "Creates a clone of this object, places it on the same frame, and returns a reference to it.",
+        "clones": "An array of every clone of an object.",
+        "remove": "Removes this object from the project.",
+        "setText": "Changes the content of a text object.",
+        "hits": "Determines if the hitboxes of two objects overlap, returns information on their collision.",
+        "hitsReturns": "Returns {offsetX, offsetY, overlapX, overlapY, intersections}",
+        "ifHits": "A conditional that can be used to check if two objects collide."
+      },
+      "sound": {
+        "playSound": "Plays a sound in the asset library.",
+        "stopAllSounds": "Stops all currently playing sounds."
+      },
+      "project": {
+        "width": "The width of the project canvas.",
+        "height": "The height of the project canvas.",
+        "framerate": "The framerate of the project.",
+        "hitTestOptions": "The current hit test options.",
+        "hitTestOptionsFn": "Sets global settings for hit testing, project.hitTestOptions."
+      },
+      "random": {
+        "integer": "Returns a random whole number between a minimum and maximum.",
+        "float": "Returns a random decimal number between a minimum and maximum.",
+        "choice": "Returns a random item in the given array."
+      },
+      "input": {
+        "mouseX": "The x position of the mouse on the screen.",
+        "mouseY": "The y position of the mouse on the screen.",
+        "mouseMoveX": "The amount the mouse moved on the x-axis in the last tick.",
+        "mouseMoveY": "The amount the mouse moved on the y-axis in the last tick.",
+        "key": "The last key pressed.",
+        "keys": "An array of all keys which are currently pressed down.",
+        "isMouseDown": "True if the mouse is currently pressed down.",
+        "isKeyDown": "Returns true if the given key is currently down.",
+        "isKeyDownReturns": "True if passed key is down.",
+        "isKeyJustPressed": "Returns true if the given key was pressed within the last tick.",
+        "isKeyJustPressedReturns": "True if passed key was pressed in the last frame.",
+        "ifKey": "Runs if the last key pressed is equal to the letter, or symbol, tested in the condition.",
+        "hideCursor": "Hides the cursor.",
+        "showCursor": "Un-hides the cursor."
+      }
+    }
+  },
+  "simpleProjectSettings": {
+    "title": "Project Settings",
+    "width": "Width",
+    "height": "Height"
+  }
+}

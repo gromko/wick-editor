@@ -83,6 +83,7 @@ import iconUploadDark from 'resources/asset-library-icons/upload-icon-dark.svg';
 
 // Assets
 import iconImage from 'resources/tool-icons/image.svg';
+import iconSvgAsset from 'resources/tool-icons/svg.svg';
 import iconGear from 'resources/tool-icons/settings.svg';
 import iconGearWhite from 'resources/tool-icons/settings-white.png';
 import iconGroup from 'resources/tool-icons/group.svg';
@@ -183,6 +184,10 @@ import iconCodeBack from 'resources/code-icons/back.svg';
 
 // Support Us
 import iconRedHeart from 'resources/support-us-icons/red-heart.svg';
+import iconWickWorld from 'resources/support-us-icons/wickworld.png';
+
+
+
 
 const icons = {
   "brush":iconBrush,
@@ -204,6 +209,8 @@ const icons = {
   "text": iconText,
   "image": iconImage,
   "imageAsset": iconImage,
+  "svg": iconSvgAsset,
+  "SVGAsset": iconSvgAsset,
   "clip": iconClip,
   "leaveUp": iconLeaveUp,
   "upload": iconUpload,
@@ -324,6 +331,7 @@ const icons = {
   "codeBack": iconCodeBack,
   "redheart": iconRedHeart,
   "add-dark": iconAddDark,
+  "wickworld": iconWickWorld,
   "upload-dark": iconUploadDark
 }
 

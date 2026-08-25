@@ -19,6 +19,7 @@
 
 import React, { Component } from 'react';
 import { DragSource } from 'react-dnd';
+import { withTranslation } from 'react-i18next';
 import './_asset.scss';
 import DragDropTypes from 'Editor/DragDropTypes.js';
 import ToolIcon from 'Editor/Util/ToolIcon/ToolIcon';
@@ -66,13 +67,14 @@ class Asset extends Component {
   }
 
   renderAddButton = () => {
+    const { t } = this.props;
     if (this.props.asset.classname === 'SoundAsset') {
       return <span className="asset-button add">
-          <ActionButton classsName="add" color="green" text="Add to Frame" action={() => this.props.addSoundToActiveFrame(this.props.asset)}/>
+          <ActionButton classsName="add" color="green" text={t('assetLibrary.addToFrame')} action={() => this.props.addSoundToActiveFrame(this.props.asset)}/>
         </span>
     } else {
       return  <span className="asset-button add">
-        <ActionButton classsName="add" color="green" text="Add to Canvas" action={this.addToCanvas}/>
+        <ActionButton classsName="add" color="green" text={t('assetLibrary.addToCanvas')} action={this.addToCanvas}/>
       </span>
     }
   }
@@ -130,4 +132,4 @@ class Asset extends Component {
   }
 }
 
-export default DragSource(DragDropTypes.GET_ASSET_TYPE, assetSource, collect)(Asset)
+export default withTranslation()(DragSource(DragDropTypes.GET_ASSET_TYPE, assetSource, collect)(Asset))

@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { withTranslation } from 'react-i18next';
 
 import ActionButton from 'Editor/Util/ActionButton/ActionButton';
 
@@ -8,21 +9,23 @@ var classNames = require("classnames");
 
 class OutlinerExpandButton extends Component {
   render () {
-    
+    const { t } = this.props;
+
     return (
       <ActionButton
       color="tool"
+      containerClassName="outliner-expand-button"   // новий проп
       isActive={ () => false }
       id="outliner-toggle"
-      tooltip={this.props.expanded ? "Hide Outliner" : "Show Outliner"}
+      tooltip={this.props.expanded ? t('outliner.hideOutliner') : t('outliner.showOutliner')}
       action={this.props.toggleOutliner}
       tooltipPlace="left"
       icon="outliner"
-      className="outliner-expand-button"
+      //className="outliner-expand-button"
       iconClassName={classNames("outliner-toggle-icon", {"outliner-expand-button-closed": !this.props.expanded})}
       />
     );
   }
 }
 
-export default OutlinerExpandButton
+export default withTranslation()(OutlinerExpandButton)

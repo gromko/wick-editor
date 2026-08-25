@@ -101,9 +101,27 @@ export default function initializeDefaultFileHandlers() {
       input.type = 'file';
       input.style.display = 'none';
       args.accept && (input.accept = args.accept);
-      input.onchange = onChange;
       args.multiple && (input.multiple = "multiple");
       input.className = "wick-editor-hidden-file-input";
+
+      // The input MUST be attached to the document. An <input type="file">
+      // that was only created via document.createElement() but never
+      // inserted into the DOM can still open the native file picker when
+      // .click() is called, but its 'change' event is not reliably fired
+      // once a file is chosen (this varies by browser). Without this,
+      // the picker opens, the user selects a file, and nothing happens -
+      // no error, no callback, because onChange was never invoked.
+      document.body.appendChild(input);
+
+      input.onchange = (e) => {
+        onChange(e);
+
+        // Reset the value after every change. Without this, choosing the
+        // SAME file twice in a row (e.g. re-importing an SVG right after
+        // deleting the one it replaced) does not fire 'change' the second
+        // time, since the browser sees no change in the input's value.
+        input.value = '';
+      };
 
       function clickInput() {
         input.click();

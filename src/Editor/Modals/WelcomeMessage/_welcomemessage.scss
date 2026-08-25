@@ -22,11 +22,12 @@
 $welcome-modal-padding: 28px;
 
 .welcome-modal-body {
-  width: 670px;
+  width: 800px;
   height: 420px;
-  max-width: 670px;
+  max-width: 800px;
   max-height: 420px;
   padding: 0px;
+  background-color: $editor-modal-dark;
 }
 
 #welcome-modal-interior-content {
@@ -46,8 +47,8 @@ $welcome-modal-padding: 28px;
 }
 
 #welcome-message-container {
-  background-color: $editor-modal-dark;
-  width: 350px;
+  background-color: #383434;
+  width: 440px;
   min-width: 350px;
   padding: $welcome-modal-padding;
   padding-top: 30px;

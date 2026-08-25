@@ -32,7 +32,9 @@ class MenuBarSupportButton extends Component {
           id={this.props.id}
           action={this.props.action}
           text={this.props.text}
-          icon={this.props.icon}>
+          icon={this.props.icon}
+          tooltip={this.props.tooltip}
+          tooltipPlace={this.props.tooltipPlace}>
         </ActionButton>
       </div>
     )

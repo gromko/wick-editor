@@ -30,7 +30,12 @@ Wick.View.Timeline = class extends Wick.View {
         this.frameLayers = [];
 
         var layersInRenderOrder = this.model.layers.filter(layer => {
-            return layer.project.isPublished || !layer.hidden;
+            // A layer's project can be null here if this Timeline belongs to a
+            // Clip that hasn't been attached to a Wick.Project yet (e.g. while
+            // still being constructed by SVGAsset.walkItems/addClip's pre-render
+            // step). In that case there's no "isPublished" state to check yet,
+            // so just fall back to the layer's own hidden flag.
+            return !layer.project || layer.project.isPublished || !layer.hidden;
         }).reverse();
 
         layersInRenderOrder.forEach(layer => {

@@ -18,6 +18,7 @@
  */
 
 import React, { Component } from 'react';
+import { withTranslation } from 'react-i18next';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import Asset from './Asset/Asset';
@@ -93,10 +94,11 @@ class AssetLibrary extends Component {
   }
 
   renderTitle = () => {
+    const { t } = this.props;
     return (
       <div className="asset-library-title-container">
         <div className="asset-library-title-text">
-          Asset Library
+          {t('assetLibrary.title')}
         </div>
         <div className="btn-asset-upload">
           <ActionButton
@@ -104,7 +106,7 @@ class AssetLibrary extends Component {
             action={this.openBuiltinAssetLibrary}
             id="button-asset-builtin"
             icon="add"
-            tooltip="Add Builtin Asset" />
+            tooltip={t('assetLibrary.addBuiltinAsset')} />
         </div>
         <div className="btn-asset-builtin">
           <ActionButton
@@ -112,17 +114,18 @@ class AssetLibrary extends Component {
             action={this.openFileDialog}
             id="button-asset-upload"
             icon="upload"
-            tooltip="Upload Assets" />
+            tooltip={t('assetLibrary.uploadAssets')} />
         </div>
       </div>
     )
   }
 
   render() {
+    const { t } = this.props;
     let filteredAssets = this.filterArray(this.props.assets);
     let sortedFilteredAssets = this.sortAssets(filteredAssets);
     return(
-      <div className="docked-pane asset-library" aria-label="Asset Library">
+      <div className="docked-pane asset-library" aria-label={t('assetLibrary.ariaLabel')}>
         {this.renderTitle()}
         <div className="asset-library-body">
           <div className="asset-library-filter">
@@ -131,8 +134,8 @@ class AssetLibrary extends Component {
             </div>
             <WickInput
               id="asset-library-filter-input"
-              aria-label="filter"
-              placeholder="filter..."
+              aria-label={t('assetLibrary.filterAriaLabel')}
+              placeholder={t('assetLibrary.filterPlaceholder')}
               type="text"
               onChange={this.updateFilter}
               value={this.state.filterText}/>
@@ -146,4 +149,4 @@ class AssetLibrary extends Component {
   }
 }
 
-export default AssetLibrary
+export default withTranslation()(AssetLibrary)

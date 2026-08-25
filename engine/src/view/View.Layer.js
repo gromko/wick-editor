@@ -48,7 +48,7 @@ Wick.View.Layer = class extends Wick.View {
         // (However, this is ignored while the project is playing so the interact tool always works.)
         // (This is also ignored for layers which are inside clips and not the current focus.)
         this.activeFrameLayers.forEach(layer => {
-            if (this.model.project.playing || !this.model.parentClip.isFocus) {
+            if (!this.model.project || this.model.project.playing || !this.model.parentClip.isFocus) {
                 layer.locked = false;
             } else {
                 layer.locked = this.model.locked;

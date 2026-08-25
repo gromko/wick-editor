@@ -78,7 +78,7 @@ class EditorCore extends Component {
    */
   undoAction = () => {
     if(!this.project.undo()) {
-      this.toast('Nothing to undo.', 'warning');
+      this.toast(this.props.t('editorCore.toasts.nothingToUndo'), 'warning');
     } else {
       this.projectDidChange({ skipHistory:true, actionName: "Undo" });
     }
@@ -89,7 +89,7 @@ class EditorCore extends Component {
    */
   redoAction = () => {
     if(!this.project.redo()) {
-      this.toast('Nothing to redo.', 'warning');
+      this.toast(this.props.t('editorCore.toasts.nothingToRedo'), 'warning');
     } else {
       this.projectDidChange({skipHistory:true, actionName: "Redo" });
     }
@@ -550,16 +550,16 @@ class EditorCore extends Component {
   deleteSelectedObjects = () => {
     if(this.project.selection.location === 'AssetLibrary') {
       this.openWarningModal({
-        description: "Any objects in the project using this asset will also be deleted.",
-        title: "Delete this asset?",
+        description: this.props.t('editorCore.warnings.deleteAssetDescription'),
+        title: this.props.t('editorCore.warnings.deleteAssetTitle'),
         acceptAction: (() => {
           this.project.deleteSelectedObjects();
           this.projectDidChange({ actionName: "Delete Selected Asset" });
         }),
         cancelAction: (() => {}),
         finalAction: (() => {}),
-        acceptText: "Delete",
-        cancelText: "Cancel",
+        acceptText: this.props.t('editorCore.warnings.delete'),
+        cancelText: this.props.t('editorCore.warnings.cancel'),
       });
     } else {
       this.project.deleteSelectedObjects();
@@ -579,10 +579,10 @@ class EditorCore extends Component {
     this.toggleCodeEditor(false);
 
     this.openWarningModal({
-      description: 'Delete Script: "' + scriptName + '" from the object?',
-      title: "Delete Script",
-      acceptText: "Delete",
-      cancelText: "Cancel",
+      description: this.props.t('editorCore.warnings.deleteScriptDescription', { scriptName: scriptName }),
+      title: this.props.t('editorCore.warnings.deleteScriptTitle'),
+      acceptText: this.props.t('editorCore.warnings.delete'),
+      cancelText: this.props.t('editorCore.warnings.cancel'),
       acceptAction: (() => scriptOwner.removeScript(scriptName)),
       finalAction: (() => this.toggleCodeEditor(oldEditorState)), // Reopen code editor if necessary.
     });
@@ -846,7 +846,7 @@ class EditorCore extends Component {
       this.projectDidChange({ actionName: "Add Sound to Active Frame" });
     }
     else {
-      this.toast('No active frame to add sound to.', 'error');
+      this.toast(this.props.t('editorCore.toasts.noActiveFrameForSound'), 'error');
     }
   }
 
@@ -861,9 +861,9 @@ class EditorCore extends Component {
       if (callback) callback(asset);
 
       if(asset === null) {
-        this.toast('Could not add files to project: ' + file.name, 'error');
+        this.toast(this.props.t('editorCore.toasts.couldNotAddFiles', { fileName: file.name }), 'error');
       } else {
-        this.toast(`Imported ${file.name || "project"} successfully.`);
+        this.toast(this.props.t('editorCore.toasts.importedSuccessfully', { name: file.name || this.props.t('editorCore.toasts.defaultProjectName') }));
         this.projectDidChange({ actionName: "Import File As Asset" });
       }
     });
@@ -912,14 +912,14 @@ class EditorCore extends Component {
   createAssets = (acceptedFiles, rejectedFiles, options) => {
     if (!options) options = {};
 
-    let toastID = this.toast('Importing files...', 'info');
+    let toastID = this.toast(this.props.t('editorCore.toasts.importingFiles'), 'info');
 
     // Error message for failed uploads
     if (rejectedFiles.length > 0) {
       let fileNamesRejected = rejectedFiles.map(file => file.name).join(', ');
       this.updateToast(toastID, {
         type: 'error',
-        text: 'Could not import files: ' + fileNamesRejected});
+        text: this.props.t('editorCore.toasts.couldNotImportFiles', { fileNames: fileNamesRejected })});
     }
 
     let createCallback = (asset) => {
@@ -970,10 +970,10 @@ class EditorCore extends Component {
     window.Wick.HTMLPreview.previewProject(this.project, previewWindow => {
       this.hideWaitOverlay();
       if (previewWindow) {
-        this.toast('Project preview window opened.', 'info', {autoClose: false});
+        this.toast(this.props.t('editorCore.toasts.previewWindowOpened'), 'info', {autoClose: false});
       } else {
         // If pop ups are disabled, previewWindow will be null.
-        this.toast('Could not open a preview window. Try disabling your popup blocker!', 'error', {autoClose: false});
+        this.toast(this.props.t('editorCore.toasts.couldNotOpenPreviewWindow'), 'error', {autoClose: false});
       }
     });
   }
@@ -984,13 +984,13 @@ class EditorCore extends Component {
   exportProjectAsWickFile = () => {
     this.showWaitOverlay();
 
-    let toastID = this.toast('Exporting project as a .wick file...', 'info', {autoClose: false});
+    let toastID = this.toast(this.props.t('editorCore.toasts.exportingWickFile'), 'info', {autoClose: false});
     
     window.Wick.WickFile.toWickFile(this.project, file => {
       if (file === undefined) {
         this.updateToast(toastID, {
           type: 'error',
-          text: "Could not export .wick file." });
+          text: this.props.t('editorCore.toasts.couldNotExportWickFile') });
         this.hideWaitOverlay();
         return;
       }
@@ -998,13 +998,13 @@ class EditorCore extends Component {
       let success = () => {
         this.updateToast(toastID, {
           type: 'success',
-          text: "Successfully saved .wick file." });
+          text: this.props.t('editorCore.toasts.savedWickFile') });
       }
 
       let fail = () => {
         this.updateToast(toastID, {
           type: 'error',
-          text: "Error saving .wick file. Please try again." });
+          text: this.props.t('editorCore.toasts.errorSavingWickFile') });
       }
 
       file = new Blob([file], {type: 'application/wick'});
@@ -1028,7 +1028,7 @@ class EditorCore extends Component {
 
     // this.showWaitOverlay();
     let outputName = args.name || this.project.name;
-    let toastID = this.toast('Exporting animated GIF...', 'info');
+    let toastID = this.toast(this.props.t('editorCore.toasts.exportingGif'), 'info');
 
     let onProgress = (message, progress) => {
       this.setState({
@@ -1046,13 +1046,13 @@ class EditorCore extends Component {
       let success = () => {
         this.updateToast(toastID, {
           type: 'success',
-          text: "Successfully saved .gif file." });
+          text: this.props.t('editorCore.toasts.savedGif') });
       }
 
       let fail = () => {
         this.updateToast(toastID, {
           type: 'error',
-          text: "Error saving .gif file. Please try again." });
+          text: this.props.t('editorCore.toasts.errorSavingGif') });
       }
 
       window.saveFileFromWick(gifBlob, outputName, '.gif', success, fail);
@@ -1086,7 +1086,7 @@ class EditorCore extends Component {
       exporting: true,
     });
 
-    let toastID = this.toast('Exporting image sequence...', 'info');
+    let toastID = this.toast(this.props.t('editorCore.toasts.exportingImageSequence'), 'info');
 
     let onProgress = (completed, maxFrames) => {
       let message = "Rendered " + completed + "/" + maxFrames + " frames";
@@ -1106,13 +1106,13 @@ class EditorCore extends Component {
       let success = () => {
         this.updateToast(toastID, {
           type: 'success',
-          text: "Successfully saved image sequence." });
+          text: this.props.t('editorCore.toasts.savedImageSequence') });
       }
 
       let fail = () => {
         this.updateToast(toastID, {
           type: 'error',
-          text: "Error saving image sequence. Please try again." });
+          text: this.props.t('editorCore.toasts.errorSavingImageSequence') });
       }
 
       window.saveFileFromWick(sequenceBlobZip, this.project.name+'_imageSequence', '.zip', success, fail);
@@ -1151,7 +1151,7 @@ class EditorCore extends Component {
       exporting: true,
     });
 
-    let toastID = this.toast('Exporting video...', 'info');
+    let toastID = this.toast(this.props.t('editorCore.toasts.exportingVideo'), 'info');
 
     let onProgress = (message, progress) => {
       this.setState({
@@ -1167,7 +1167,7 @@ class EditorCore extends Component {
     let onFinish = (message) => {
       this.updateToast(toastID, {
         type: 'success',
-        text: "Successfully created .mp4 file." });
+        text: this.props.t('editorCore.toasts.savedVideo') });
       console.log("Video Render Complete: ", message);
 
       this.setState({
@@ -1204,7 +1204,7 @@ class EditorCore extends Component {
       renderStatusMessage: "Creating svg.",
     });
 
-    let toastID = this.toast('Exporting svg...', 'info');
+    let toastID = this.toast(this.props.t('editorCore.toasts.exportingSvg'), 'info');
 
     let onError = (message) => {
       console.error("SVG builder had an error with message: ", message);
@@ -1216,13 +1216,13 @@ class EditorCore extends Component {
       let success = () => {
         this.updateToast(toastID, {
           type: 'success',
-          text: "Successfully saved .svg file." });
+          text: this.props.t('editorCore.toasts.savedSvg') });
       }
 
       let fail = () => {
         this.updateToast(toastID, {
           type: 'error',
-          text: "Error saving .svg file. Please try again." });
+          text: this.props.t('editorCore.toasts.errorSavingSvg') });
       }
 
       window.saveFileFromWick(file, this.project.name, '.svg', success, fail);
@@ -1242,19 +1242,19 @@ class EditorCore extends Component {
    * Export the current project as a bundled standalone ZIP that can be uploaded to itch/newgrounds/etc.
    */
   exportProjectAsStandaloneZip = (args) => {
-    let toastID = this.toast('Exporting project as ZIP...', 'info');
+    let toastID = this.toast(this.props.t('editorCore.toasts.exportingZip'), 'info');
     let outputName = args.name || this.project.name;
     window.Wick.ZIPExport.bundleProject(this.project, blob => {
       let success = () => {
         this.updateToast(toastID, {
           type: 'success',
-          text: "Successfully saved .zip file." });
+          text: this.props.t('editorCore.toasts.savedZip') });
       }
 
       let fail = () => {
         this.updateToast(toastID, {
           type: 'error',
-          text: "Error saving .zip file. Please try again." });
+          text: this.props.t('editorCore.toasts.errorSavingZip') });
       }
 
       window.saveFileFromWick(blob, outputName, '.zip', success, fail);
@@ -1266,7 +1266,7 @@ class EditorCore extends Component {
    * Export the current project as a bundled standalone HTML file.
    */
   exportProjectAsStandaloneHTML = (args) => {
-    let toastID = this.toast('Exporting project as HTML...', 'info');
+    let toastID = this.toast(this.props.t('editorCore.toasts.exportingHtml'), 'info');
     let outputName = args.name || this.project.name;
     window.Wick.HTMLExport.bundleProject(this.project, html => {
       let file = new Blob([html], {type: 'text/html'});
@@ -1274,13 +1274,13 @@ class EditorCore extends Component {
       let success = () => {
         this.updateToast(toastID, {
           type: 'success',
-          text: "Successfully saved .html file." });
+          text: this.props.t('editorCore.toasts.savedHtml') });
       }
 
       let fail = () => {
         this.updateToast(toastID, {
           type: 'error',
-          text: "Error saving .html file. Please try again." });
+          text: this.props.t('editorCore.toasts.errorSavingHtml') });
       }
 
       window.saveFileFromWick(file, outputName, '.html', success, fail);
@@ -1308,9 +1308,9 @@ class EditorCore extends Component {
     window.Wick.WickFile.fromWickFile(file, project => {
       if(project) {
         this.setupNewProject(project);
-        this.toast(`Opened ${file.name || "project"} successfully.`, 'success');
+        this.toast(this.props.t('editorCore.toasts.openedSuccessfully', { name: file.name || this.props.t('editorCore.toasts.defaultProjectName') }), 'success');
       } else {
-        this.toast('Could not open project.', 'error');
+        this.toast(this.props.t('editorCore.toasts.couldNotOpenProject'), 'error');
         this.hideWaitOverlay();
       }
     });
@@ -1324,7 +1324,18 @@ class EditorCore extends Component {
   setupNewProject = (project) => {
     // if (!project) return;
     this.resetEditorForLoad();
-    this.project = project || new window.Wick.Project();
+    // When creating a brand-new project (not loading an existing one),
+    // pass the translated default name explicitly. Wick.Project itself
+    // stays locale-agnostic (its own fallback is the raw English "My
+    // Project", used only if no name is given at all — e.g. by exported/
+    // played projects, or other non-editor callers) — but for anything
+    // created through the editor, we want the name that ends up in
+    // project.name (and therefore in the MenuBar, in the rename field in
+    // SimpleProjectSettings, and in the saved .wick file) to already be
+    // in the user's current language from the moment of creation, so
+    // there's no mismatch between what's displayed and what's actually
+    // stored.
+    this.project = project || new window.Wick.Project({ name: this.props.t('menuBar.defaultProjectName') });
     this.project.selection.clear();
 
     // Attach error handling messages
@@ -1336,10 +1347,11 @@ class EditorCore extends Component {
     this.project.prepareProjectForEditor();
   }
 
+
   openNewProjectConfirmation = () => {
     this.openWarningModal({
-      description: "You will lose any unsaved changes.",
-      title: "Create New Project?",
+      description: this.props.t('editorCore.warnings.newProjectDescription'),
+      title: this.props.t('editorCore.warnings.newProjectTitle'),
       acceptAction: (() => {
         setTimeout(() => {
           this.setupNewProject();
@@ -1349,9 +1361,9 @@ class EditorCore extends Component {
       finalAction: (() => {
 
       }),
-      acceptText: "Create",
+      acceptText: this.props.t('editorCore.warnings.create'),
       acceptIcon: "create",
-      cancelText: "Cancel",
+      cancelText: this.props.t('editorCore.warnings.cancel'),
       cancelIcon: "cancel-white"
     });
   }
@@ -1360,6 +1372,9 @@ class EditorCore extends Component {
     this.doesAutoSavedProjectExist(exists => {
       if (exists) {
         this.queueModal('AutosaveWarning');
+      } else {
+        // Немає що вирішувати — автозбереження можна відновити.
+        this._autosaveBlocked = false;
       }
     });
   }
@@ -1388,7 +1403,7 @@ class EditorCore extends Component {
           }, 'blob');
         })
         .catch((e) => {
-          this.toast('Could not download project from URL.','warning');
+          this.toast(this.props.t('editorCore.toasts.couldNotDownloadFromUrl'), 'warning');
           console.error('tryToParseProjectURL: Could not download Wick project.')
           console.error(e);
         });; 
@@ -1417,7 +1432,7 @@ class EditorCore extends Component {
       // Parse requested URL
       var url = new URL(projectLink);
     } catch {
-      this.toast("Project URL is invalid!", 'warning');
+      this.toast(this.props.t('editorCore.toasts.projectUrlInvalid'), 'warning');
       return false;
     }
 
@@ -1425,7 +1440,7 @@ class EditorCore extends Component {
     var whitelist = ['wickeditor.com', 'editor.wickeditor.com', 'test.wickeditor.com', 'aka.ms'];
 
     if(whitelist.indexOf(url.hostname) === -1) {
-      this.toast('Could not open project from link! \n URL is not on whitelist.','warning');
+      this.toast(this.props.t('editorCore.toasts.couldNotOpenFromLinkWhitelist'), 'warning');
       console.error('tryToParseProjectURL: URL is not in the whitelist.');
       return false;
     }
@@ -1449,23 +1464,23 @@ class EditorCore extends Component {
 
     this.project.onError(message => {
       if(message === 'OUT_OF_BOUNDS' || message === 'LEAKY_HOLE') {
-        this.toast('The shape you are trying to fill has a gap.', 'warning');
+        this.toast(this.props.t('editorCore.toasts.fillGap'), 'warning');
       } else if (message === 'FILL_EQUALS_HOLE') {
-        this.toast("Error: Can't fill the same color.", 'warning');
+        this.toast(this.props.t('editorCore.toasts.fillSameColor'), 'warning');
       } else if (message === 'LOOPING') {
-        this.toast('Fill bucket failed. Error: Looping. Try Again?', 'warning');
+        this.toast(this.props.t('editorCore.toasts.fillLooping'), 'warning');
       } else if (message === 'NO_VALID_CROSSINGS') {
-        this.toast('Fill bucket failed. Overlapping shape above?', 'warning');
+        this.toast(this.props.t('editorCore.toasts.fillOverlapping'), 'warning');
       } else if (message === 'TOO_COMPLEX') {
-        this.toast('Shape is too complex.', 'warning');
+        this.toast(this.props.t('editorCore.toasts.fillTooComplex'), 'warning');
       } else if (message === 'NO_PATHS') {
-        this.toast('There is no hole to fill.', 'warning');
+        this.toast(this.props.t('editorCore.toasts.fillNoHole'), 'warning');
       } else if (message === 'CLICK_NOT_ALLOWED_LAYER_LOCKED') {
-        this.toast('The layer you are trying to draw onto is locked.', 'warning');
+        this.toast(this.props.t('editorCore.toasts.layerLocked'), 'warning');
       } else if (message === 'CLICK_NOT_ALLOWED_LAYER_HIDDEN') {
-        this.toast('The layer you are trying to draw onto is hidden.', 'warning');
+        this.toast(this.props.t('editorCore.toasts.layerHidden'), 'warning');
       } else if (message === 'CLICK_NOT_ALLOWED_NO_FRAME') {
-        this.toast('There is no frame to draw onto.', 'warning');
+        this.toast(this.props.t('editorCore.toasts.noFrameToDrawOnto'), 'warning');
       } else {
         this.toast(message, 'warning');
       }
@@ -1495,6 +1510,7 @@ class EditorCore extends Component {
     if (!this.project) return;
     if (this.state.previewPlaying) return;
     if (this.state.activeModalName !== null) return;
+    if (this._autosaveBlocked) return;
 
     window.Wick.AutoSave.save(this.project, () => {
       callback();
@@ -1506,7 +1522,13 @@ class EditorCore extends Component {
    * Does nothing if not autosaved project is stored.
    */
   loadAutosavedProject = (callback) => {
-    window.Wick.AutoSave.getAutosavesList(autosaveList => {
+    // Користувач вирішив завантажити автозбережений проєкт —
+    // автозбереження знову дозволене.
+    this._autosaveBlocked = false;
+
+    // Пропускаємо порожні автозбереження (без Path/Clip/Button) —
+    // їх не варто відновлювати, як і не варто було пропонувати.
+    window.Wick.AutoSave.getNonEmptyAutosavesList(autosaveList => {
       if(!autosaveList[0]) {
         callback();
       } else {
@@ -1526,7 +1548,9 @@ class EditorCore extends Component {
    * True if an autosave exists.
    */
   doesAutoSavedProjectExist = (callback) => {
-    window.Wick.AutoSave.getAutosavesList(autosaveList => {
+    // Порожні автозбереження (без Path/Clip/Button) не рахуються —
+    // їх не потрібно пропонувати користувачу для відновлення.
+    window.Wick.AutoSave.getNonEmptyAutosavesList(autosaveList => {
       callback(autosaveList.length > 0);
     });
   }
@@ -1535,6 +1559,10 @@ class EditorCore extends Component {
    * Clears any autosaved project from local storage.
    */
   clearAutoSavedProject = (callback) => {
+    // Користувач вирішив НЕ завантажувати автозбережений проєкт —
+    // автозбереження знову дозволене.
+    this._autosaveBlocked = false;
+
     window.Wick.AutoSave.delete(this.project.uuid, () => {
       callback();
     });
@@ -1644,7 +1672,7 @@ class EditorCore extends Component {
     if(this.project.copySelectionToClipboard()) {
       this.projectDidChange({ actionName: "Copy Selection" });
     } else {
-      this.toast('There is nothing to copy.', 'warning');
+      this.toast(this.props.t('editorCore.toasts.nothingToCopy'), 'warning');
     }
   }
 
@@ -1655,7 +1683,7 @@ class EditorCore extends Component {
     if(this.project.duplicateSelection()) {
       this.projectDidChange({actionName: "Duplicate Selection" });
     } else {
-      this.toast('There is nothing to duplicate.', 'warning');
+      this.toast(this.props.t('editorCore.toasts.nothingToDuplicate'), 'warning');
     }
   }
 
@@ -1666,7 +1694,7 @@ class EditorCore extends Component {
     if(this.project.cutSelectionToClipboard()) {
       this.projectDidChange({ actionName: "Cut Selection"});
     } else {
-      this.toast('There is nothing to duplicate.', 'warning');
+      this.toast(this.props.t('editorCore.toasts.nothingToCut'), 'warning');
     }
   }
 
@@ -1678,7 +1706,7 @@ class EditorCore extends Component {
     if(this.project.pasteClipboardContents()) {
       this.projectDidChange({ actionName: "Paste from Clipboard" });
     } else {
-      this.toast('There is nothing in the clipboard to paste.', 'warning');
+      this.toast(this.props.t('editorCore.toasts.nothingInClipboardToPaste'), 'warning');
     }
   }
 

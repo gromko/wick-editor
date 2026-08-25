@@ -110,7 +110,7 @@ WickObjectCache = class {
      * This is basically a garbage collection function. This function attempts to keep objects
      * that are referenced in undo/redo.
      * @param {Wick.Project} project - the project to use to determine which objects have no references
-     */
+
     removeUnusedObjects (project) {
         var activeObjects = this.getActiveObjects(project);
         let uuids = activeObjects.map(obj => obj.uuid);
@@ -128,6 +128,23 @@ WickObjectCache = class {
             }
         });
     }
+*/
+removeUnusedObjects (project) {
+    var activeObjects = this.getActiveObjects(project);
+    let uuids = activeObjects.map(obj => obj.uuid);
+    uuids.push(project.uuid);
+
+    let uuidSet = new Set(uuids);
+
+    let historyIDs = project.history.getObjectUUIDs();
+    uuidSet = new Set([...historyIDs, ...uuidSet]);
+
+    this.getAllObjects().forEach(object => {
+        if(!uuidSet.has(object.uuid)) {            
+            this.removeObject(object);
+        }
+    });
+}
 
     /**
      * Removes all objects with the temporary flag set to true.

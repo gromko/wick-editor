@@ -24,7 +24,7 @@ $inspector-title-height: 36px;
 $inspector-selection-icon-size: 40px;
 $inspector-row-height: 26px;
 $inspector-button-height: 40px;
-$inspector-button-min-width: 40px;
+$inspector-button-min-width: 100px;
 $inspector-image-preview-size: 100px;
 $inspector-break-size: calc(#{$editor-outline-padding} * .5);
 
@@ -33,6 +33,7 @@ $inspector-transition-duration: 0.2s;
 .inspector {
   background-color: $editor-primary;
   width: 100%;
+  min-width: 200px;
   height: 100%;
   overflow: auto;
   box-sizing: border-box;
@@ -82,4 +83,10 @@ $inspector-transition-duration: 0.2s;
   justify-content: center;
 
   margin-bottom: 4px;
+}
+
+.inspector-button {
+    height: 40px;
+
+    
 }

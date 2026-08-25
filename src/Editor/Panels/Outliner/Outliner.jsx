@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { withTranslation } from 'react-i18next';
 
 import {OutlinerObject} from './OutlinerObject/OutlinerObject'
 import OutlinerTitle from './OutlinerTitle/OutlinerTitle'
@@ -237,13 +238,14 @@ class Outliner extends Component {
   }
 
   render() {
+      const { t } = this.props;
       var timelineHierarchy = [this.props.project.activeTimeline];
       while (timelineHierarchy[0].parentTimeline !== null) {
           timelineHierarchy.unshift(timelineHierarchy[0].parentTimeline);
       }
 
       return (
-      <div className={classNames("docked-pane outliner", this.props.className)} aria-label="Outliner">
+      <div className={classNames("docked-pane outliner", this.props.className)} aria-label={t('outliner.ariaLabel')}>
           <div className="outliner-title-container">
             <OutlinerTitle/>
           </div>
@@ -252,7 +254,7 @@ class Outliner extends Component {
 
             <div className="outliner-item">
                 <OutlinerDisplay
-                tooltip="Display"
+                tooltip={t('outliner.tooltips.display')}
                 display={this.state.display}
                 onChange={(val) => {this.setState({"display": val});}}
                 />
@@ -305,4 +307,4 @@ class Outliner extends Component {
   }
 }
 
-export default Outliner
+export default withTranslation()(Outliner)

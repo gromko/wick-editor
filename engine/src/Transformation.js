@@ -26,6 +26,8 @@ Wick.Transformation = class {
      * @param {number} scaleX - The amount of scaling on the x-axis
      * @param {number} scaleY - The amount of scaling on the y-axis
      * @param {number} rotation - Rotation, in degrees
+     * @param {number} skewX - Horizontal skew/shear amount
+     * @param {number} skewY - Vertical skew/shear amount
      * @param {number} opacity - Opacity, ranging from 0.0 - 1.0
      */
     constructor (args) {
@@ -36,6 +38,8 @@ Wick.Transformation = class {
         this.scaleX = args.scaleX === undefined ? 1 : args.scaleX;
         this.scaleY = args.scaleY === undefined ? 1 : args.scaleY;
         this.rotation = args.rotation === undefined ? 0 : args.rotation;
+        this.skewX = args.skewX === undefined ? 0 : args.skewX;
+        this.skewY = args.skewY === undefined ? 0 : args.skewY;
         this.opacity = args.opacity === undefined ? 1 : args.opacity;
     }
 
@@ -49,6 +53,8 @@ Wick.Transformation = class {
             scaleX: this.scaleX,
             scaleY: this.scaleY,
             rotation: this.rotation,
+            skewX: this.skewX,
+            skewY: this.skewY,
             opacity: this.opacity,
         }
     }

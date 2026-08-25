@@ -19,6 +19,7 @@
 
 import React, { Component } from 'react';
 import { DropTarget } from 'react-dnd';
+import { withTranslation } from 'react-i18next';
 import DragDropTypes from 'Editor/DragDropTypes.js';
 
 import './_canvas.scss';
@@ -65,10 +66,10 @@ class Canvas extends Component {
   }
 
   render() {
-    const { connectDropTarget, isOver } = this.props;
+    const { connectDropTarget, isOver, t } = this.props;
 
     return connectDropTarget (
-      <div id="canvas-container-wrapper" style={{width:"100%", height:"100%"}} aria-label="Canvas">
+      <div id="canvas-container-wrapper" style={{width:"100%", height:"100%"}} aria-label={t('canvas.ariaLabel')}>
         { isOver && <div className="drag-drop-overlay" /> }
         <div id="wick-canvas-container" ref={this.canvasContainer}></div>
       </div>
@@ -105,4 +106,4 @@ function collect(connect, monitor) {
   };
 }
 
-export default DropTarget(DragDropTypes.CANVAS, canvasTarget, collect)(Canvas);
+export default withTranslation()(DropTarget(DragDropTypes.CANVAS, canvasTarget, collect)(Canvas));

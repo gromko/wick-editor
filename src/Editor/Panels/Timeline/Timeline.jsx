@@ -18,6 +18,7 @@
  */
 
 import React, { Component } from 'react';
+import { withTranslation } from 'react-i18next';
 
 import { DropTarget } from 'react-dnd';
 import DragDropTypes from 'Editor/DragDropTypes.js';
@@ -96,10 +97,10 @@ class Timeline extends Component {
   }
 
   render() {
-    const { connectDropTarget, isOver } = this.props;
+    const { connectDropTarget, isOver, t } = this.props;
 
     return connectDropTarget (
-      <div id="animation-timeline-container" aria-label="Timeline">
+      <div id="animation-timeline-container" aria-label={t('timeline.ariaLabel')}>
         { isOver && <div className="drag-drop-overlay" /> }
         <div id="animation-timeline" ref={this.canvasContainer} />
       </div>
@@ -136,4 +137,4 @@ function collect(connect, monitor) {
   };
 }
 
-export default DropTarget(DragDropTypes.TIMELINE, timelineTarget, collect)(Timeline)
+export default withTranslation()(DropTarget(DragDropTypes.TIMELINE, timelineTarget, collect)(Timeline))

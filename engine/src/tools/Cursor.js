@@ -41,6 +41,8 @@ Wick.Tools.Cursor = class extends Wick.Tool {
         this.CURSOR_ROTATE_BOTTOM_RIGHT = 'cursors/rotate-bottom-right.png';
         this.CURSOR_ROTATE_BOTTOM_LEFT = 'cursors/rotate-bottom-left.png';
         this.CURSOR_MOVE = 'cursors/move.png';
+        this.CURSOR_SKEW_HORIZONTAL = 'cursors/skew-horizontal.png';
+        this.CURSOR_SKEW_VERTICAL = 'cursors/skew-vertical.png';
 
         this.hitResult = new this.paper.HitResult();
         this.selectionBox = new this.paper.SelectionBox(paper);
@@ -310,6 +312,17 @@ Wick.Tools.Cursor = class extends Wick.Tool {
                 }[angleRoundedToNearest45];
 
                 return cursorGraphicFromAngle;
+            } else if (this.hitResult.item.data.handleType === 'skew') {
+                // Skew handles only shear along one axis: top/bottom edge
+                // handles shear horizontally, left/right edge handles shear
+                // vertically - regardless of which specific corner-ish
+                // angle they'd otherwise round to.
+                var edge = this.hitResult.item.data.handleEdge;
+                if (edge === 'top' || edge === 'bottom') {
+                    return this.CURSOR_SKEW_HORIZONTAL;
+                } else {
+                    return this.CURSOR_SKEW_VERTICAL;
+                }
             }
         } else {
             if(this.hitResult.type === 'fill') {

@@ -34,7 +34,7 @@ Wick.GUIElement.Tooltip = class extends Wick.GUIElement {
 
         // Font settings
         ctx.font = "14px Nunito Sans";
-        var textContent = this.label;
+        var textContent = Wick.GUIElement.Locale.t(this.label);
         var textWidth = ctx.measureText(textContent).width;
         var textHeight = 14;
 

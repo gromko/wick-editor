@@ -1,35 +1,19 @@
 /*
- * Copyright 2020 WICKLETS LLC
- *
- * This file is part of Wick Editor.
- *
- * Wick Editor is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Wick Editor is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Wick Editor.  If not, see <https://www.gnu.org/licenses/>.
- */
-
+Copyright 2020 WICKLETS LLC
+This file is part of Wick Editor.
+... (ліцензія)
+*/
 import React, { Component } from 'react';
-import ActionButton from 'Editor/Util/ActionButton/ActionButton'; 
-import WickModal from 'Editor/Modals/WickModal/WickModal'; 
+import { withTranslation } from 'react-i18next';
+import ActionButton from 'Editor/Util/ActionButton/ActionButton';
+import WickModal from 'Editor/Modals/WickModal/WickModal';
 import WickInput from 'Editor/Util/WickInput/WickInput';
-import ObjectInfo from '../Util/ObjectInfo/ObjectInfo'; 
-
+import ObjectInfo from '../Util/ObjectInfo/ObjectInfo';
 import './_makeanimated.scss';
 
 class MakeAnimated extends Component {
   constructor (props) {
     super(props);
-    this.placeholderName = "Item Name"
-    this.defaultName = "Clip"
     this.state = {
       name: "",
       makeAsset: true,
@@ -38,7 +22,9 @@ class MakeAnimated extends Component {
 
   // Creates a clip and toggles the modal.
   createAndToggle = () => {
-    let name = this.state.name !== "" ? this.state.name : this.defaultName; 
+    const { t } = this.props;
+    let defaultName = t('makeAnimated.defaultName');
+    let name = this.state.name !== "" ? this.state.name : defaultName;
     this.props.createClipFromSelection(name)
     this.props.toggle()
   }
@@ -47,61 +33,66 @@ class MakeAnimated extends Component {
   updateClipName = (newName) => {
     this.setState({
       name: newName,
-    }); 
+    });
   }
 
   // Updates state value responsible for creating asset.
   updateAssetCheckbox = (val) => {
     this.setState({
       makeAsset: val,
-    }); 
+    });
   }
 
   render() {
+    const { t } = this.props;
+    
     return (
-      <WickModal 
-      open={this.props.open} 
-      toggle={this.props.toggle} 
-      className="make-animated-modal-body"
-      overlayClassName="make-animated-modal-overlay">
+      <WickModal
+        open={this.props.open}
+        toggle={this.props.toggle}
+        className="make-animated-modal-body"
+        overlayClassName="make-animated-modal-overlay" >
         <div id="make-animated-modal-interior-content">
-          <div id="make-animated-modal-title">Make Animated</div>
+          <div id="make-animated-modal-title">
+            {t('makeAnimated.title')}
+          </div>
           <div id="make-animated-modal-name-input">
             <WickInput
               type="text"
               value={this.state.name}
               onChange={this.updateClipName}
-              placeholder={this.placeholderName} />
+              placeholder={t('makeAnimated.placeholderName')} />
           </div>
-          <ObjectInfo 
-          title="CLIP" 
-          rows={[
+          <ObjectInfo
+            title={t('makeAnimated.clipTitle')}
+            rows={[
               {
-                text: "Has its own timeline",
+                text: t('makeAnimated.clipOwnTimeline'),
                 icon: "check"
               },
               {
-                text: "Can control timeline with code",
+                text: t('makeAnimated.clipControlTimeline'),
                 icon: "check"
-              }, 
+              },
               {
-                text: "Can add any code",
-                icon: "check", 
+                text: t('makeAnimated.canAddAnyCode'),
+                icon: "check",
               }
-            ]}/>
+            ]} />
         </div>
         <div id="make-animated-modal-footer">
           <div id="make-animated-modal-accept">
-            <ActionButton 
+            <ActionButton
               className="make-animated-modal-button"
               color='gray-green'
               action={this.createAndToggle}
-              text="Convert to Clip"
-              />
+              text={t('makeAnimated.convertToClip')}
+            />
           </div>
         </div>
         <div id="make-animated-asset-checkbox-container">
-          {/* <WickInput
+          {/*  
+          <WickInput
             type="checkbox"
             containerclassname="make-animated-asset-checkbox-input-container"
             className="make-animated-asset-checkbox-input"
@@ -109,12 +100,13 @@ class MakeAnimated extends Component {
             defaultChecked={this.state.makeAsset}
           />
           <div id="make-animated-asset-checkbox-message">
-            Add to asset library
-          </div> */}
+            {t('makeAnimated.addToAssetLibrary')}
+          </div> 
+          */}
         </div>
       </WickModal>
     );
   }
 }
 
-export default MakeAnimated
+export default withTranslation()(MakeAnimated);

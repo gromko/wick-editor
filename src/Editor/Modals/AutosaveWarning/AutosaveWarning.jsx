@@ -18,6 +18,7 @@
  */
 
 import React, { Component } from 'react';
+import { withTranslation } from 'react-i18next';
 import ActionButton from 'Editor/Util/ActionButton/ActionButton';
 import WickModal from 'Editor/Modals/WickModal/WickModal';
 
@@ -37,6 +38,7 @@ class AutosaveWarning extends Component {
   }
 
   render() {
+    const { t } = this.props;
     return (
       <WickModal
       open={this.props.open}
@@ -45,14 +47,14 @@ class AutosaveWarning extends Component {
       className="autosave-modal-body"
       overlayClassName="autosave-modal-overlay">
         <div id="autosave-modal-interior-content">
-          <div id="autosave-modal-title">Load Autosave?</div>
+          <div id="autosave-modal-title">{t('autosaveWarning.title')}</div>
           <div id="autosave-modal-footer">
             <div id="autosave-modal-cancel">
                 <ActionButton
                   className="autosave-modal-button"
                   color='red'
                   action={this.deleteAndToggle}
-                  text="Delete"
+                  text={t('autosaveWarning.delete')}
                   icon="delete-black"
                   iconClassName="autosave-icon"
                   />
@@ -62,7 +64,7 @@ class AutosaveWarning extends Component {
                   className="autosave-modal-button"
                   color='green'
                   action={this.loadAndToggle}
-                  text="Load"
+                  text={t('autosaveWarning.load')}
                   icon="load"
                   iconClassName="autosave-icon"
                   />
@@ -74,4 +76,4 @@ class AutosaveWarning extends Component {
   }
 }
 
-export default AutosaveWarning
+export default withTranslation()(AutosaveWarning)

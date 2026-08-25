@@ -18,18 +18,20 @@
  */
 
 import React, { Component } from 'react';
+import { withTranslation } from 'react-i18next';
 import './_outlinertitle.scss';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 class OutlinerTitle extends Component {
 
   render() {
+    const { t } = this.props;
     return(
       <div className="outliner-title">
-        <div className="outliner-title-name">Outliner</div>
+        <div className="outliner-title-name">{t('outliner.title')}</div>
       </div>
     )
   }
 }
 
-export default OutlinerTitle
+export default withTranslation()(OutlinerTitle)

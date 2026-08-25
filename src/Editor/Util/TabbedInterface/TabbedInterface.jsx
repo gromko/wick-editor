@@ -36,21 +36,21 @@ class TabbedInterface extends Component {
         super(props);
 
         this.state = {
-          selectedTab: this.props.tabNames[0],
+          selectedTabIndex: 0,
         }
     }
 
-    // Selects the tab of the given name.
-    selectTab = (name) => {
-        this.setState({
-            selectedTab: name,
-        });
 
-        if (this.props.onTabSelect) {
-            this.props.onTabSelect(name);
-        }
-    }
+	// Selects the tab at the given index.
+	selectTab = (index) => {
+		this.setState({
+			selectedTabIndex: index,
+		});
 
+		if (this.props.onTabSelect) {
+			this.props.onTabSelect(this.props.tabNames[index], index);   // додано index другим аргументом
+		}
+	}
     /**
      * Renders the selectable tab bar.
      */
@@ -60,8 +60,8 @@ class TabbedInterface extends Component {
                 {this.props.tabNames.map( (tab, i) => 
                     <button
                     key={`tab-${tab}-${i}`}
-                    className={classNames("tabbed-interface-main-tab", this.props.tabClassName, {"selected": (this.state.selectedTab === tab)})}
-                    onClick={() => {this.selectTab(tab)}}>
+                    className={classNames("tabbed-interface-main-tab", this.props.tabClassName, {"selected": (this.state.selectedTabIndex === i)})}
+                    onClick={() => {this.selectTab(i)}}>
                         {tab}
                 </button> 
                 )}
@@ -74,7 +74,7 @@ class TabbedInterface extends Component {
             <div className={classNames("tabbed-interface", this.props.className)}>
                 {this.renderTabs()}
                 <div className={classNames("tabbed-interface-body", this.props.bodyClassName)}>
-                    {this.props.children[this.props.tabNames.indexOf(this.state.selectedTab)]}
+                    {this.props.children[this.state.selectedTabIndex]}
                 </div>
             </div>
         ); 

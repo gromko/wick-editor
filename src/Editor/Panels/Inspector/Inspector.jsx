@@ -18,6 +18,7 @@
  */
 
 import React, { Component } from 'react';
+import { withTranslation } from 'react-i18next';
 import './_inspector.scss';
 import './_inspectorselector.scss';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -77,29 +78,14 @@ class Inspector extends Component {
     }
 
     /**
-     * What titles should be displayed for each selection type?
+     * Which selection types have a translated title (see renderTitle / inspector.selectionTypes.*).
      */
-    this.inspectorTitles = {
-      "frame": "Frame",
-      "multiframe": "Multi-Frame",
-      "tween": "Tween",
-      "multitween": "Multi-Tween",
-      "clip": "Clip",
-      "button": "Button",
-      "path": "Path",
-      "text": "Text",
-      "image": "Image",
-      "multipath": "Multi-Path",
-      "multiclip": "Multi-Clip",
-      "multitimeline": "Multi-Timeline",
-      "multicanvas": "Multi-Canvas",
-      "imageasset": "Image Asset",
-      "soundasset": "Sound Asset",
-      "multiassetmixed": "Multi-Asset",
-      "multisoundasset": "Multi-Asset Sound",
-      "multiimageasset": "Multi-Asset Image",
-      "unknown": "",
-    }
+    this.knownSelectionTypes = [
+      "frame", "multiframe", "tween", "multitween", "clip", "button",
+      "path", "text", "image", "multipath", "multiclip", "multitimeline",
+      "multicanvas", "imageasset", "soundasset", "multiassetmixed",
+      "multisoundasset", "multiimageasset", "unknown",
+    ]
   }
 
   /**
@@ -151,9 +137,10 @@ class Inspector extends Component {
    * Renders an inspector row allowing viewing and editing of the selection stroke width.
    */
   renderSelectionStrokeWidth = () => {
+    const { t } = this.props;
     return (
       <InspectorNumericSlider
-        tooltip="Stroke Width"
+        tooltip={t('inspector.tooltips.strokeWidth')}
         val={this.getSelectionAttribute('strokeWidth')}
         onChange={(val) => this.setSelectionAttribute('strokeWidth', val)}
         divider={false}
@@ -166,13 +153,21 @@ class Inspector extends Component {
    * Renders an inspector row allowing viewing and editing of the selection fill color.
    */
   renderSelectionColor = () => {
+    const { t } = this.props;
     return (
       <div className="inspector-item">
         <InspectorColorNumericInput
-          tooltip1="Fill"
-          tooltip2="Opacity"
+          tooltip1={t('inspector.tooltips.fill')}
+          tooltip2={t('inspector.tooltips.opacity')}
           val1={this.getSelectionAttribute('fillColor').toCSS()}
           onChange1={(col) => this.setSelectionAttribute('fillColor', col)}
+          onChangeIntermediate1={(col) => this.setSelectionAttributeIntermediate('fillColor', col)}
+          
+          selectionProps={{
+            getSelection: () => this.props.project.selection,
+            renderSelection: () => this.props.project.view.render(),
+            targetCanvas: this.props.project.view._svgCanvas
+          }}
           id={"inspector-selection-fill-color"}
           val2={this.getSelectionAttribute('fillColorOpacity')}
           onChange2={(val) => this.setSelectionAttribute('fillColorOpacity', val)}
@@ -183,8 +178,8 @@ class Inspector extends Component {
           lastColorsUsed={this.props.lastColorsUsed}
         />
         <InspectorColorNumericInput
-          tooltip1="Stroke"
-          tooltip2="Weight"
+          tooltip1={t('inspector.tooltips.stroke')}
+          tooltip2={t('inspector.tooltips.weight')}
 
           val1={this.getSelectionAttribute('strokeColor').toCSS()}
           onChange1={(col) => this.setSelectionAttribute('strokeColor', col)}
@@ -207,6 +202,7 @@ class Inspector extends Component {
    * Renders an inspector row allowing viewing and editing of the selected object's font.
    */
   renderFontFamily = () => {
+    const { t } = this.props;
     let opts = this.props.fontInfoInterface.allFontNames;
 
     let getFontClass = (font) => {
@@ -227,7 +223,7 @@ class Inspector extends Component {
       <InspectorSelector
         className="font-family"
         value={this.getSelectionAttribute('fontFamily')}
-        tooltip="Font Family"
+        tooltip={t('inspector.tooltips.fontFamily')}
         type="select"
         isSearchable={true}
         options={opts}
@@ -260,10 +256,14 @@ class Inspector extends Component {
   }
 
   renderFontStyle = () => {
-    let options = [{value: 'normal', label: 'normal'}, {value: 'italic', label: 'italic'}]
+    const { t } = this.props;
+    let options = [
+      {value: 'normal', label: t('inspector.options.fontStyleNormal')},
+      {value: 'italic', label: t('inspector.options.fontStyleItalic')},
+    ]
     return (
       <InspectorSelector
-        tooltip="Style"
+        tooltip={t('inspector.tooltips.style')}
         type="select"
         isSearchable={true}
         value={this.getSelectionAttribute('fontStyle')}
@@ -275,23 +275,24 @@ class Inspector extends Component {
   }
 
   renderFontWeight = () => {
+    const { t } = this.props;
     let fontWeights = [
-      {label: 'thin', value: 100},
-      {label: 'extra light', value: 200},
-      {label: 'light', value: 300},
-      {label: 'normal', value: 400},
-      {label: 'medium', value: 500},
-      {label: 'semi bold', value: 600},
-      {label: 'bold', value: 700},
-      {label: 'extra bold', value: 800},
-      {label: 'black', value: 900},
+      {label: t('inspector.options.fontWeightThin'), value: 100},
+      {label: t('inspector.options.fontWeightExtraLight'), value: 200},
+      {label: t('inspector.options.fontWeightLight'), value: 300},
+      {label: t('inspector.options.fontWeightNormal'), value: 400},
+      {label: t('inspector.options.fontWeightMedium'), value: 500},
+      {label: t('inspector.options.fontWeightSemiBold'), value: 600},
+      {label: t('inspector.options.fontWeightBold'), value: 700},
+      {label: t('inspector.options.fontWeightExtraBold'), value: 800},
+      {label: t('inspector.options.fontWeightBlack'), value: 900},
     ];
 
     let weight = Math.min(Math.max(this.getSelectionAttribute('fontWeight'), 100), 900);
 
     return (
       <InspectorSelector
-        tooltip="Weight"
+        tooltip={t('inspector.tooltips.weight')}
         type="select"
         isSearchable={true}
         value={weight}
@@ -307,25 +308,57 @@ class Inspector extends Component {
    * Renders an inspector row allowing viewing and editing of the selection font size.
    */
   renderFontSize = () =>  {
+    const { t } = this.props;
     return (
       <InspectorNumericInput
-        tooltip="Font Size"
+        tooltip={t('inspector.tooltips.fontSize')}
         val={this.getSelectionAttribute('fontSize')}
         onChange={(val) => this.setSelectionAttribute('fontSize', val)} />
     )
   }
 
   /**
+   * Wick Engine — суто "рушійний" код без локалізації, тож новий шар
+   * завжди отримує англійську назву за замовчуванням ("Layer", "Layer 2"
+   * тощо), незалежно від обраної локалі. Для відображення в Інспекторі
+   * перекладаємо саме цю дефолтну назву — тими самими ключами, якими вже
+   * користується Органайзер (outliner.defaultLayerName /
+   * outliner.defaultLayerNameNumbered) — а назву, яку користувач ввів
+   * власноруч, лишаємо без змін.
+   * @param {string} rawName - "сира" назва шару (layer.name).
+   * @returns {string} назва, яку варто показати в полі вводу.
+   */
+  getDisplayedLayerName = (rawName) => {
+    const { t } = this.props;
+
+    if (rawName === null || rawName === undefined) return rawName;
+
+    let defaultNameMatch = rawName.match(/^Layer(?: (\d+))?$/);
+    if (!defaultNameMatch) return rawName;
+
+    return defaultNameMatch[1]
+      ? t('outliner.defaultLayerNameNumbered', { number: defaultNameMatch[1] })
+      : t('outliner.defaultLayerName');
+  }
+
+  /**
    * Renders an inspector row allowing viewing and editing of the selection's name.
    */
   renderName = () => {
+    const { t } = this.props;
+    let selectionType = this.props.getSelectionType();
+    let name = this.getSelectionAttribute('name');
+    if (selectionType === 'layer') {
+      name = this.getDisplayedLayerName(name);
+    }
+
     return (
       <div className="inspector-item">
         <InspectorTextInput
-          tooltip="Name"
-          val={this.getSelectionAttribute('name')}
+          tooltip={t('inspector.tooltips.name')}
+          val={name}
           onChange={(val) => {this.setSelectionAttribute('name', val);}}
-          placeholder="no_name"
+          placeholder={t('inspector.placeholders.noName')}
           id="inspector-name" />
       </div>
     );
@@ -335,13 +368,14 @@ class Inspector extends Component {
    * Renders an inspector row allowing viewing and editing of a selection's identifier
    */
   renderIdentifier = () => {
+    const { t } = this.props;
     return (
       <div className="inspector-item">
         <InspectorTextInput
-          tooltip="Name"
+          tooltip={t('inspector.tooltips.name')}
           val={this.getSelectionAttribute('identifier')}
           onChange={(val) => {this.setSelectionAttribute('identifier', val);}}
-          placeholder="no_name"
+          placeholder={t('inspector.placeholders.noName')}
           id="inspector-name" />
       </div>
     );
@@ -351,10 +385,11 @@ class Inspector extends Component {
    * Renders an inspector row allowing viewing of the selection's file name.
    */
   renderFilename = () => {
+    const { t } = this.props;
     return (
       <div className="inspector-item">
         <InspectorTextInput
-          tooltip="File"
+          tooltip={t('inspector.tooltips.file')}
           val={this.getSelectionAttribute('filename')}
           readOnly={true}
           id="inspector-file-name"/>
@@ -386,10 +421,11 @@ class Inspector extends Component {
    * Renders an inspector row allowing viewing and editing of the selection's frame length.
    */
   renderFrameLength = () => {
+    const { t } = this.props;
     return (
       <div className="inspector-item">
         <InspectorNumericInput
-          tooltip="Length"
+          tooltip={t('inspector.tooltips.length')}
           val={this.getSelectionAttribute('frameLength')}
           onChange={(val) => this.setSelectionAttribute('frameLength', val)}
           id="inspector-frame-length" />
@@ -401,10 +437,11 @@ class Inspector extends Component {
    * Renders an inspector row allowing viewing and editing of the selection's x y position.
    */
   renderPosition = () => {
+    const { t } = this.props;
     return (
       <InspectorDualNumericInput
-        tooltip1="Origin X"
-        tooltip2="Origin Y"
+        tooltip1={t('inspector.tooltips.originX')}
+        tooltip2={t('inspector.tooltips.originY')}
         val1={this.getSelectionAttribute('originX')}
         val2={this.getSelectionAttribute('originY')}
         onChange1={(val) => this.setSelectionAttribute('originX', val)}
@@ -417,10 +454,11 @@ class Inspector extends Component {
    * Renders an inspector row allowing viewing and editing of the selection's origin x y position.
    */
   renderOrigin = () => {
+    const { t } = this.props;
     return (
       <InspectorDualNumericInput
-        tooltip1="X"
-        tooltip2="Y"
+        tooltip1={t('inspector.tooltips.x')}
+        tooltip2={t('inspector.tooltips.y')}
         val1={this.getSelectionAttribute('x')}
         val2={this.getSelectionAttribute('y')}
         onChange1={(val) => this.setSelectionAttribute('x', val)}
@@ -433,10 +471,11 @@ class Inspector extends Component {
    * Renders an inspector row allowing viewing and editing of the selection's width and height.
    */
   renderSize = () => {
+    const { t } = this.props;
     return (
       <InspectorDualNumericInput
-        tooltip1="Width"
-        tooltip2="Height"
+        tooltip1={t('inspector.tooltips.width')}
+        tooltip2={t('inspector.tooltips.height')}
         val1={this.getSelectionAttribute('width')}
         val2={this.getSelectionAttribute('height')}
         onChange1={(val) => this.setSelectionAttribute('width', val)}
@@ -449,10 +488,11 @@ class Inspector extends Component {
    * Renders an inspector row allowing viewing and editing of the selection's scaleX and scaleY.
    */
   renderScale = () => {
+    const { t } = this.props;
     return (
       <InspectorDualNumericInput
-        tooltip1="Scale W"
-        tooltip2="Scale H"
+        tooltip1={t('inspector.tooltips.scaleW')}
+        tooltip2={t('inspector.tooltips.scaleH')}
         val1={this.getSelectionAttribute('scaleX')}
         val2={this.getSelectionAttribute('scaleY')}
         onChange1={(val) => this.setSelectionAttribute('scaleX', val)}
@@ -465,9 +505,10 @@ class Inspector extends Component {
    * Renders an inspector row allowing viewing and editing of the selection's rotation.
    */
   renderRotation = () => {
+    const { t } = this.props;
     return (
       <InspectorNumericInput
-        tooltip="Rotation"
+        tooltip={t('inspector.tooltips.rotation')}
         val={this.getSelectionAttribute('rotation')}
         onChange={(val) => this.setSelectionAttribute('rotation', val)}
         id="inspector-rotation" />
@@ -478,9 +519,10 @@ class Inspector extends Component {
    * Renders an inspector row allowing viewing and editing of the selection's opacity.
    */
   renderOpacity = () => {
+    const { t } = this.props;
     return (
       <InspectorNumericSlider
-        tooltip="Opacity"
+        tooltip={t('inspector.tooltips.opacity')}
         val={this.getSelectionAttribute('opacity')}
         onChange={(val) => this.setSelectionAttribute('opacity', val)}
         divider={false}
@@ -511,16 +553,17 @@ class Inspector extends Component {
    * current object.
    */
   renderSelectionSoundAsset = () => {
+    const { t } = this.props;
     let options = [{
       value: null,
-      label: "No Sound"
+      label: t('inspector.options.noSound')
     }]
 
     let mapAsset = asset => {
       if (!asset) {
         return {
           value: "novalue",
-          label: "No Sound",
+          label: t('inspector.options.noSound'),
         }
       }
       return {
@@ -534,7 +577,7 @@ class Inspector extends Component {
     let value = this.getSelectionAttribute('sound');
     return (
       <InspectorSelector
-        tooltip="Sound"
+        tooltip={t('inspector.tooltips.sound')}
         type="select"
         options={options}
         value={value}
@@ -544,9 +587,10 @@ class Inspector extends Component {
   }
 
   renderSelectionSoundVolume = () => {
+    const { t } = this.props;
     return (
       <InspectorNumericInput
-        tooltip="Volume"
+        tooltip={t('inspector.tooltips.volume')}
         val={this.getSelectionAttribute('soundVolume')}
         onChange={(val) => {this.setSelectionAttribute('soundVolume', val)}}
         id="inspector-sound-volume" />
@@ -554,9 +598,10 @@ class Inspector extends Component {
   }
 
   renderSelectionSoundStart = () => {
+    const { t } = this.props;
     return (
       <InspectorNumericInput
-        tooltip="Start (ms)"
+        tooltip={t('inspector.tooltips.startMs')}
         type="numeric"
         val={this.getSelectionAttribute('soundStart')}
         onChange={(val) => {this.setSelectionAttribute('soundStart', val)}} />
@@ -574,10 +619,11 @@ class Inspector extends Component {
   }
 
   renderAnimationType = () => {
+    const { t } = this.props;
     return (
       <div className="inspector-item">
         <InspectorSelector
-          tooltip="Animation"
+          tooltip={t('inspector.tooltips.animation')}
           type="select"
           options={this.props.getClipAnimationTypes()}
           value={this.getSelectionAttribute('animationType')}
@@ -586,13 +632,13 @@ class Inspector extends Component {
           {
             this.getSelectionAttribute('singleFrameNumber') &&
             <InspectorNumericInput
-            tooltip="Frame"
+            tooltip={t('inspector.tooltips.frame')}
             val={this.getSelectionAttribute('singleFrameNumber')}
             onChange={(val) => this.setSelectionAttribute('singleFrameNumber', val)} />
           }
         {this.getSelectionAttribute('animationType') !== "single" &&
         <InspectorCheckbox
-          tooltip="Synced" 
+          tooltip={t('inspector.tooltips.synced')} 
           checked={this.getSelectionAttribute('isSynced')}
           onChange={(val) => this.setSelectionAttribute('isSynced', !this.getSelectionAttribute('isSynced'))}/>}
       </div>
@@ -600,6 +646,7 @@ class Inspector extends Component {
   }
 
   renderTweenEasingType = () => {
+    const { t } = this.props;
     let options = window.Wick.Tween.VALID_EASING_TYPES;
     let optionLabels = [];
     options.forEach((option) => {
@@ -608,7 +655,7 @@ class Inspector extends Component {
     return (
       <div className="inspector-item">
         <InspectorSelector
-          tooltip="Easing Type"
+          tooltip={t('inspector.tooltips.easingType')}
           type="select"
           options={optionLabels}
           value={this.getSelectionAttribute('easingType')}
@@ -619,10 +666,11 @@ class Inspector extends Component {
   }
 
   renderTweenFullRotations = () => {
+    const { t } = this.props;
     return (
       <div className="inspector-item">
         <InspectorNumericInput
-          tooltip="Full Rotations"
+          tooltip={t('inspector.tooltips.fullRotations')}
           val={this.getSelectionAttribute('fullRotations')}
           onChange={(val) => this.setSelectionAttribute('fullRotations', val)}
           id="inspector-full-rotation" />
@@ -931,21 +979,23 @@ class Inspector extends Component {
    * @param {string} selectionType selection type to return.
    */
   renderTitle = (selectionType) => {
-    if (!(selectionType in this.inspectorTitles)) selectionType = "";
+    const { t } = this.props;
+    if (this.knownSelectionTypes.indexOf(selectionType) === -1) selectionType = "unknown";
 
     return (
       <div className="inspector-title-container">
         <InspectorTitle
           type={selectionType}
-          title={this.inspectorTitles[selectionType]} />
+          title={t('inspector.selectionTypes.' + selectionType, '')} />
       </div>
     );
   }
 
   render() {
+    const { t } = this.props;
     let selectionType = this.props.getSelectionType();
     return(
-      <div className="docked-pane inspector" aria-label="Inspector Panel">
+      <div className="docked-pane inspector" aria-label={t('inspector.ariaLabel')}>
         {this.renderTitle(selectionType)}
         <div className="inspector-body">
           {this.renderDisplay(selectionType)}
@@ -958,4 +1008,4 @@ class Inspector extends Component {
   }
 }
 
-export default Inspector
+export default withTranslation()(Inspector)

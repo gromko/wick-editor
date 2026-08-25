@@ -78,6 +78,17 @@
   color: white;
 }
 
+// Мовний блок стоїть останнім, перед кнопками модалки —
+// відокремлюємо його роздільником і даємо трохи більше повітря
+// знизу, а не впритул, як інші групи з фіксованою висотою 60px.
+.editor-settings-group.editor-settings-language-group {
+  height: auto;
+  margin-top: 24px;
+  padding-top: 16px;
+  padding-bottom: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 .forward-backward-icon {
   height: 100%;
   margin-right: 4px;

@@ -18,6 +18,7 @@
  */
 
 import React, { Component } from 'react';
+import { withTranslation } from 'react-i18next';
 import WickModal from 'Editor/Modals/WickModal/WickModal';
 import { Progress } from 'reactstrap';
 
@@ -25,14 +26,19 @@ import './_exportmedia.scss';
 
 class ExportMedia extends Component {
   render() {
+    const { t } = this.props;
     let renderName = this.props.project.name;
+    let renderTypeLabel = this.props.renderType;
 
     if (this.props.renderType === "video") {
       renderName += ".mp4";
+      renderTypeLabel = t('exportMedia.types.video');
     } else if (this.props.renderType === "gif") {
       renderName += ".gif";
+      renderTypeLabel = t('exportMedia.types.gif');
     } else if (this.props.renderType === "image sequence") {
-      renderName += " as sequence"
+      renderName += t('exportMedia.asSequenceSuffix');
+      renderTypeLabel = t('exportMedia.types.imageSequence');
     }
 
     return (
@@ -41,9 +47,9 @@ class ExportMedia extends Component {
         toggle={this.props.toggle}
         className="media-export-modal-body"
         overlayClassName="media-export-modal-overlay">
-        <div id="media-export-modal-title">Exporting {this.props.renderType}</div>
+        <div id="media-export-modal-title">{t('exportMedia.exportingTitle', { type: renderTypeLabel })}</div>
         <div className="media-export-modal-content">
-          <div id="media-export-modal-subtitle">Creating "{renderName}"</div>
+          <div id="media-export-modal-subtitle">{t('exportMedia.creatingSubtitle', { name: renderName })}</div>
           <Progress
             striped
             animated={!this.renderDone}
@@ -61,4 +67,4 @@ class ExportMedia extends Component {
   }
 }
 
-export default ExportMedia
+export default withTranslation()(ExportMedia)

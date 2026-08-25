@@ -19,10 +19,14 @@
 
 @import 'Editor/_wickbrand.scss';
 
+// Локальний темно-синій колір лише для панелі MenuBar
+// (не змінює глобальну $editor-primary, яка впливає на всі інші панелі)
+$menubar-dark-blue: #0d1b3e;
+
 .menu-bar {
   height: 100%;
   width: 100%;
-  background-color: $editor-primary;
+  background-color: $menubar-dark-blue;
   overflow: visible;
   border: $editor-outline-padding solid $editor-primary-outline;
   display: flex;

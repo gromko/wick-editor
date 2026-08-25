@@ -18,6 +18,7 @@
  */
 
 import React from 'react';
+import { withTranslation } from 'react-i18next';
 
 import './_editor.scss';
 import './styles/default_theme.css';
@@ -61,8 +62,8 @@ const { version } = require('../../package.json');
 var classNames = require('classnames');
 
 class Editor extends EditorCore {
-  constructor () {
-    super();
+  constructor (props) {
+    super(props);
     // Set path for engine dependencies
     window.Wick.resourcepath = 'corelibs/wick-engine/';
 
@@ -75,7 +76,7 @@ class Editor extends EditorCore {
     this.state = {
       project: null,
       previewPlaying: false,
-      activeModalName: window.localStorage.skipWelcomeMessage ? null : "WelcomeMessage",
+      activeModalName: null, // window.localStorage.skipWelcomeMessage ? null : "WelcomeMessage",
       activeModalQueue: [],
       codeEditorOpen: false,
       scriptToEdit: "default",
@@ -90,10 +91,10 @@ class Editor extends EditorCore {
       assetLibrarySize: 150,
       consoleLogs: [], 
       warningModalInfo: {
-        description: "No Description Given",
-        title: "Title",
-        acceptText: "Accept",
-        cancelText: "Cancel",
+        description: this.props.t('editorCore.warnings.defaultDescription'),
+        title: this.props.t('editorCore.warnings.defaultTitle'),
+        acceptText: this.props.t('editorCore.warnings.accept'),
+        cancelText: this.props.t('editorCore.warnings.cancel'),
         acceptAction: (() => {console.warn("No Accept Action")}),
         cancelAction: (() => {console.warn("No Cancel Action")}),
       },
@@ -131,7 +132,14 @@ class Editor extends EditorCore {
 
     // Last Autosave
     this._lastAutosave = 0;
-
+    // Блокує автозбереження до того, як ми визначились,
+    
+    
+    
+    // чи існує автозбережений проєкт, і (якщо існує) поки
+    // користувач не прийняв рішення в модалці AutosaveWarning.
+    this._autosaveBlocked = true;
+    
     // Create interfaces.
     this.fontInfoInterface = new FontInfoInterface(this);
 
@@ -139,7 +147,7 @@ class Editor extends EditorCore {
     this.hotKeyInterface = new HotKeyInterface(this);
 
     // Init actions
-    this.actionMapInterface = new ActionMapInterface(this);
+    this.actionMapInterface = new ActionMapInterface(this, this.props.t);
 
     // Init Script Info
     this.scriptInfoInterface = new ScriptInfoInterface();
@@ -204,7 +212,12 @@ class Editor extends EditorCore {
   UNSAFE_componentWillMount = () => {
     document.title =  `Wick Editor ${this.editorVersion}`;
     // Initialize "live" engine state
-    this.project = new window.Wick.Project();
+    // Same reasoning as setupNewProject() in EditorCore.jsx: pass the
+    // translated default name explicitly here too, since this is the
+    // project created at initial app boot (before the user has clicked
+    // "New Project" even once) — it's the one shown in the very first
+    // screenshot of a freshly-opened editor.
+    this.project = new window.Wick.Project({ name: this.props.t('menuBar.defaultProjectName') });
     this.attachErrorHandlers();
     this.paper = window.paper;
 
@@ -1141,8 +1154,8 @@ class Editor extends EditorCore {
               {!(renderSize === "small") &&
 
                 <ReflexElement
-                size={250}
-                maxSize={300} minSize={200}
+                size={290}
+                maxSize={320} minSize={290}
                 onResize={this.resizeProps.onResize}
                 onStopResize={this.resizeProps.onStopInspectorResize}>
                 <ReflexContainer windowResizeAware={true} orientation="horizontal">
@@ -1254,4 +1267,4 @@ class Editor extends EditorCore {
     }
   }
 
-export default Editor
+export default withTranslation()(Editor)

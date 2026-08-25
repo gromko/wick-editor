@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import WickModal from 'Editor/Modals/WickModal/WickModal';
 import WickInput from 'Editor/Util/WickInput/WickInput';
 
@@ -6,6 +7,7 @@ import './_simpleprojectsettings.scss';
 import ActionButton from '../../Util/ActionButton/ActionButton';
 
 export default function SimpleProjectSettings(props) {
+  const { t } = useTranslation();
   const [newProjectName, setNewProjectName] = useState(props.project.name);
   const [newProjectFrameRate, setNewProjectFrameRate] = useState(props.project.framerate);
   const [newWidth, setNewWidth] = useState(props.project.width);
@@ -39,10 +41,10 @@ export default function SimpleProjectSettings(props) {
       toggle={props.toggle}
       className="simple-settings-modal-container"
       overlayClassName="settings-modal-overlay">
-      <h2 className="simple-settings-modal-title">Project Settings</h2>
+      <h2 className="simple-settings-modal-title">{t('simpleProjectSettings.title')}</h2>
       <div className="simple-settings-modal-body">
         <div className="simple-settings-form-row">
-          <label htmlFor="name" className="simple-settings-input-label">Name</label>
+          <label htmlFor="name" className="simple-settings-input-label">{t('projectSettings.name')}</label>
           <WickInput
             className="simple-settings-input"
             name="name"
@@ -52,7 +54,7 @@ export default function SimpleProjectSettings(props) {
         </div>
 
         <div className="simple-settings-form-row">
-          <label htmlFor="name" className="simple-settings-input-label">Framerate (FPS)</label>
+          <label htmlFor="name" className="simple-settings-input-label">{t('projectSettings.framerateFps')}</label>
           <WickInput
             className="simple-settings-input"
             name="framerate"
@@ -63,7 +65,7 @@ export default function SimpleProjectSettings(props) {
 
         <div className="simple-settings-dual-form-row">
           <div className="simple-settings-dual-input">
-            <label htmlFor="width" className="simple-settings-input-label">Width</label>
+            <label htmlFor="width" className="simple-settings-input-label">{t('simpleProjectSettings.width')}</label>
             <WickInput
               className="simple-settings-input"
               name="width"
@@ -74,7 +76,7 @@ export default function SimpleProjectSettings(props) {
               onChange={setNewWidth} />
           </div>
           <div className="simple-settings-dual-input">
-            <label htmlFor="height" className="simple-settings-input-label">Height</label>
+            <label htmlFor="height" className="simple-settings-input-label">{t('simpleProjectSettings.height')}</label>
             <WickInput
               className="simple-settings-input"
               name="height"
@@ -91,12 +93,12 @@ export default function SimpleProjectSettings(props) {
       <div className="simple-settings-modal-footer">
         <ActionButton
           className="simple-settings-action-button"
-          text="Cancel"
+          text={t('projectSettings.cancel')}
           color="gray"
           action={resetProjectDetails} />
         <ActionButton
           className="simple-settings-action-button"
-          text="Apply"
+          text={t('projectSettings.apply')}
           color="green"
           action={updateProjectSettings} />
       </div>

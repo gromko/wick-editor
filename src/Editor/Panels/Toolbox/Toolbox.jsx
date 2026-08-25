@@ -18,6 +18,7 @@
  */
 
 import React, { Component } from 'react';
+import { withTranslation } from 'react-i18next';
 import './_toolbox.scss';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -88,24 +89,26 @@ class Toolbox extends Component {
   }
 
   renderToolButtons = () => {
+    const { t } = this.props;
     return (
       <div className="tool-collection-container">
-        <ToolButton {...this.toolButtonProps} keyMap={this.props.keyMap} name='cursor' tooltip="Cursor" />
-        <ToolButton {...this.toolButtonProps} keyMap={this.props.keyMap} name='brush' tooltip="Brush" />
-        <ToolButton {...this.toolButtonProps} keyMap={this.props.keyMap} name='pencil' tooltip="Pencil" />
-        <ToolButton {...this.toolButtonProps} keyMap={this.props.keyMap} name='eraser' tooltip="Eraser" />
-        <ToolButton {...this.toolButtonProps} keyMap={this.props.keyMap} name='rectangle' tooltip="Rectangle" />
-        <ToolButton {...this.toolButtonProps} keyMap={this.props.keyMap} name='ellipse' tooltip="Ellipse" />
-        <ToolButton {...this.toolButtonProps} keyMap={this.props.keyMap} name='line' tooltip="Line" />
-        <ToolButton {...this.toolButtonProps} keyMap={this.props.keyMap} name='pathcursor' tooltip="Path Cursor" />
-        <ToolButton {...this.toolButtonProps} keyMap={this.props.keyMap} name='text' tooltip="Text" />
-        <ToolButton {...this.toolButtonProps} keyMap={this.props.keyMap} name='fillbucket' tooltip="Fill Bucket" />
-        <ToolButton {...this.toolButtonProps} keyMap={this.props.keyMap} name='eyedropper' tooltip="Eyedropper" />
+        <ToolButton {...this.toolButtonProps} keyMap={this.props.keyMap} name='cursor' tooltip={t('toolbox.tooltips.cursor')} />
+        <ToolButton {...this.toolButtonProps} keyMap={this.props.keyMap} name='brush' tooltip={t('toolbox.tooltips.brush')} />
+        <ToolButton {...this.toolButtonProps} keyMap={this.props.keyMap} name='pencil' tooltip={t('toolbox.tooltips.pencil')} />
+        <ToolButton {...this.toolButtonProps} keyMap={this.props.keyMap} name='eraser' tooltip={t('toolbox.tooltips.eraser')} />
+        <ToolButton {...this.toolButtonProps} keyMap={this.props.keyMap} name='rectangle' tooltip={t('toolbox.tooltips.rectangle')} />
+        <ToolButton {...this.toolButtonProps} keyMap={this.props.keyMap} name='ellipse' tooltip={t('toolbox.tooltips.ellipse')} />
+        <ToolButton {...this.toolButtonProps} keyMap={this.props.keyMap} name='line' tooltip={t('toolbox.tooltips.line')} />
+        <ToolButton {...this.toolButtonProps} keyMap={this.props.keyMap} name='pathcursor' tooltip={t('toolbox.tooltips.pathCursor')} />
+        <ToolButton {...this.toolButtonProps} keyMap={this.props.keyMap} name='text' tooltip={t('toolbox.tooltips.text')} />
+        <ToolButton {...this.toolButtonProps} keyMap={this.props.keyMap} name='fillbucket' tooltip={t('toolbox.tooltips.fillBucket')} />
+        <ToolButton {...this.toolButtonProps} keyMap={this.props.keyMap} name='eyedropper' tooltip={t('toolbox.tooltips.eyedropper')} />
       </div>
     )
   }
 
   renderColorPickers = () => {
+    const { t } = this.props;
     return (
       <div className="tool-collection-container">
         <div className="color-container toolbox-item" id="fill-color-picker-container">
@@ -115,7 +118,7 @@ class Toolbox extends Component {
             onChange={(color) => {this.props.setToolSetting('fillColor', new window.Wick.Color(color));}}
             id="tool-box-fill-color"
             tooltipID="tool-box-fill-color"
-            tooltip="Fill Color"
+            tooltip={t('toolbox.tooltips.fillColor')}
             placement="bottom"
             colorPickerType={this.props.colorPickerType}
             changeColorPickerType={this.props.changeColorPickerType}
@@ -130,7 +133,7 @@ class Toolbox extends Component {
             onChange={(color) => {this.props.setToolSetting('strokeColor', new window.Wick.Color(color));}}
             id="tool-box-stroke-color"
             tooltipID="tool-box-stroke-color"
-            tooltip="Stroke Color"
+            tooltip={t('toolbox.tooltips.strokeColor')}
             placement="bottom"
             stroke={true}
             colorPickerType={this.props.colorPickerType}
@@ -319,9 +322,10 @@ class Toolbox extends Component {
   }
 
   render() {
+    const { t } = this.props;
     this.toolButtonProps.className = classNames("toolbox-item", {mobile: this.props.renderSize === "small"});
     return (
-      <div className="tool-box-container" aria-label="Toolbox">
+      <div className="tool-box-container" aria-label={t('toolbox.ariaLabel')}>
         {this.props.renderSize === 'large' ? this.renderLargeToolbox() : 
         this.props.renderSize === 'medium' ? this.renderMediumToolbox() : 
                                              this.renderSmallToolbox()}
@@ -330,4 +334,4 @@ class Toolbox extends Component {
   }
 }
 
-export default Toolbox
+export default withTranslation()(Toolbox)

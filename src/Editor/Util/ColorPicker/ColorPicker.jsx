@@ -46,31 +46,39 @@ export default function ColorPicker (props) {
   }
 
   return (
-      <button
-        className={"btn-color-picker"}
-        aria-label="color picker button"
-        id={itemID}
-        onClick={toggle}
-        style={props.stroke ? {borderColor: color} : {backgroundColor: color}}
-        >
-          <Popover
-            tabIndex={-1}
-            id={popoverID}
-            placement={props.placement}
-            isOpen={open}
+      // NOTE: The Popover is intentionally a SIBLING of the trigger button,
+      // not a child of it. reactstrap positions Popover using `target`
+      // (matched by id), so DOM nesting isn't required. Nesting it inside
+      // the button caused every click inside the popover (e.g. the
+      // Swatches/Spectrum toggle buttons) to bubble up to this button's
+      // onClick={toggle} and immediately close the popover.
+      <>
+        <button
+          className={"btn-color-picker"}
+          aria-label="color picker button"
+          id={itemID}
+          onClick={toggle}
+          style={props.stroke ? {borderColor: color} : {backgroundColor: color}}
+          >
+        </button>
+        <Popover
+          tabIndex={-1}
+          id={popoverID}
+          placement={props.placement}
+          isOpen={open}
+          toggle={toggle}
+          target={itemID}
+          boundariesElement={'viewport'}>
+          <WickColorPicker
             toggle={toggle}
-            target={itemID}
-            boundariesElement={'viewport'}>
-            <WickColorPicker
-              toggle={toggle}
-              colorPickerType={props.colorPickerType}
-              changeColorPickerType={props.changeColorPickerType}
-              disableAlpha={props.disableAlpha}
-              color={color}
-              onChangeComplete={props.onChangeComplete}
-              lastColorsUsed={props.lastColorsUsed}
-            />
-          </Popover>
-      </button>
+            colorPickerType={props.colorPickerType}
+            changeColorPickerType={props.changeColorPickerType}
+            disableAlpha={props.disableAlpha}
+            color={color}
+            onChangeComplete={props.onChangeComplete}
+            lastColorsUsed={props.lastColorsUsed}
+          />
+        </Popover>
+      </>
   )
 }

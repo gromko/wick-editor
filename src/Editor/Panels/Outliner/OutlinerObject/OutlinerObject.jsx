@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import '../_outliner.scss';
 
@@ -7,6 +8,7 @@ import DragDropTypes from 'Editor/DragDropTypes.js';
 
 import OutlinerDropdown from './OutlinerDropdown/OutlinerDropdown'
 import OutlinerWidget from '../OutlinerWidget/OutlinerWidget'
+import OutlinerName from '../OutlinerName/OutlinerName'
 
 import layerIcon from 'resources/object-icons/layer.svg';
 import frameIcon from 'resources/object-icons/frame.svg';
@@ -39,6 +41,8 @@ export const OutlinerObject = ({clearSelection, selectObjects,
   editScript, playhead, depth, maxDepth, display, highlighted, 
   toggle, data, isActive, collapsedUUIDs, dragging, setDragging, 
   setFocusObject, setActiveLayerIndex, moveSelection}) => {
+
+  const { t } = useTranslation();
 
   const ref = useRef(null);
 
@@ -186,7 +190,7 @@ export const OutlinerObject = ({clearSelection, selectObjects,
     {"highlighted": highlighted === data},
     hoverLocation === 'hover-middle' && isOverCurrent && hoverLocation)}>
     <button
-    aria-label="select outliner object"
+    aria-label={t('outliner.selectObjectAriaLabel')}
     ref={drag}
     className="outliner-object-selector"
     onClick={(e) => {
@@ -207,32 +211,30 @@ export const OutlinerObject = ({clearSelection, selectObjects,
     <img
     className="row-icon"
     src={typeIcon}
-    alt={data.classname}
+    alt={t('outliner.objectTypes.' + data.classname.toLowerCase())}
     />
 
     {object_name && 
-    <span className="outliner-name">
-      {object_name}
-    </span>}
+    <OutlinerName type={data.classname.toLowerCase()} name={object_name} />}
 
     <span className="outliner-buttons-container">
       {data.classname === 'Layer' &&
-        <OutlinerWidget onClick={(e) => {toggle(e, [], 'hidden')}} on={!data.hidden} icon="outliner-hide" tooltip="Hide Layer"/>
+        <OutlinerWidget onClick={(e) => {toggle(e, [], 'hidden')}} on={!data.hidden} icon="outliner-hide" tooltip={t('outliner.hideLayer')}/>
       }
       {data.classname === 'Layer' &&
-        <OutlinerWidget onClick={(e) => {toggle(e, [], 'locked')}} on={!data.locked} icon="outliner-lock" tooltip="Lock Layer"/>
+        <OutlinerWidget onClick={(e) => {toggle(e, [], 'locked')}} on={!data.locked} icon="outliner-lock" tooltip={t('outliner.lockLayer')}/>
       }
       {(data.classname === 'Button' || data.classname === 'Clip') &&
-        <OutlinerWidget key={Math.random()} onClick={() => {console.log("yangus"); setFocusObject(data)}} icon="edit-timeline" tooltip="Edit Timeline"/>
+        <OutlinerWidget key={Math.random()} onClick={() => {console.log("yangus"); setFocusObject(data)}} icon="edit-timeline" tooltip={t('outliner.editTimeline')}/>
       }
       {data.sound && 
-        <img className="outliner-sound-icon" src={soundIcon} alt="sound"/>}
+        <img className="outliner-sound-icon" src={soundIcon} alt={t('outliner.soundIconAlt')}/>}
       {data.hasContentfulScripts && 
         <input 
         type="image" 
         className="outliner-script-icon" 
         src={scriptIcon} 
-        alt="script"
+        alt={t('outliner.scriptIconAlt')}
         onClick={() => {
           clearSelection();
           selectObjects([data]);
