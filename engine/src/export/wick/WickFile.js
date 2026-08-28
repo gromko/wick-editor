@@ -90,6 +90,14 @@ Wick.WickFile = class {
                     var loadedAssetCount = 0;
                     let corruptedFiles = []; // Store a list of all files that are now missing. 
 
+                    // Load preview image if it exists
+                    var previewFile = contents.files['preview.png'];
+                    if (previewFile) {
+                        previewFile.async('base64').then(previewBase64 => {
+                            project._previewImage = 'data:image/png;base64,' + previewBase64;
+                        }).catch(() => {});
+                    }
+
                     // Immediately end if the project has no assets.
                     if (project.getAssets().length === 0) {
                         this._prepareProject(project);
@@ -229,6 +237,28 @@ Wick.WickFile = class {
             objects: objectCacheSerialized,
         };
         zip.file("project.json", JSON.stringify(projectData, null, 2));
+
+        // Generate preview image from canvas
+        try {
+            var prevUseGradientGUI = project.selection.useGradientGUI;
+            project.selection.useGradientGUI = false;
+            project.selection.clear();
+            project.view.render();
+            project.view.paper.view.update();
+
+            var canvas = project.view.canvas;
+            if (canvas) {
+                var previewData = canvas.toDataURL('image/png');
+                var previewBase64 = previewData.split(',')[1];
+                if (previewBase64) {
+                    zip.file("preview.png", previewBase64, { base64: true });
+                }
+            }
+
+            project.selection.useGradientGUI = prevUseGradientGUI;
+        } catch (e) {
+            console.warn('WickFile: Could not generate preview image.', e);
+        }
 
         zip.generateAsync({
             type: format,

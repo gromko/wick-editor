@@ -74,6 +74,7 @@ class Inspector extends Component {
       'convertSelectionToButton': ["path", "text", "image", "multipath", "multiclip", "multicanvas"],
       'convertSelectionToClip': ["path", "text", "image", "multipath", "multiclip", "multicanvas"],
       'editTimeline': ["clip", "button"],
+      'exportSelectedClip': ["clip"],
       'addAssetToCanvas': ["imageasset"],
     }
 
@@ -106,7 +107,12 @@ class Inspector extends Component {
    * @return {string} fill color opacity from 0 to 1.
    */
   getSelectionFillColorOpacity = () => {
-    return this.getSelectionAttribute('fillColor').alpha;
+    let color = this.getSelectionAttribute('fillColor');
+    if (color instanceof window.paper.Color && color.gradient) {
+      let maxOpacity = color.gradient.stops.reduce((total, stop) => stop.color.alpha > total ? stop.color.alpha : total, 0);
+      return maxOpacity;
+    }
+    return color.alpha;
   }
 
   /**
@@ -115,8 +121,24 @@ class Inspector extends Component {
    */
   setSelectionFillColorOpacity = (value) => {
     var color = this.getSelectionAttribute('fillColor');
-    color.alpha = value;
-    this.setSelectionAttribute('fillColor', color);
+    if (color instanceof window.paper.Color && color.gradient) {
+      let maxOpacity = color.gradient.stops.reduce((total, stop) => stop.color.alpha > total ? stop.color.alpha : total, 0);
+      if (maxOpacity === 0) {
+        color.gradient.stops.forEach(stop => {
+          stop.color.alpha = value;
+        });
+      }
+      else {
+        let changeFactor = value / maxOpacity;
+        color.gradient.stops.forEach(stop => {
+          stop.color.alpha *= changeFactor;
+        });
+      }
+    }
+    else {
+      color.alpha = value;
+      this.setSelectionAttribute('fillColor', color);
+    }
   }
 
   /**
@@ -129,6 +151,15 @@ class Inspector extends Component {
       return this.setSelectionFillColorOpacity(newValue);
     }
     this.props.setSelectionAttribute(attribute, newValue);
+  }
+
+  setSelectionAttributeIntermediate = (attribute, newValue) => {
+    if (attribute === 'fillColorOpacity') {
+      return this.setSelectionFillColorOpacity(newValue);
+    }
+    this.props.project.selection[attribute] = newValue;
+    this.props.project.view.render();
+    this.props.project.guiElement.draw();
   }
 
   // Inspector Row Types
@@ -159,10 +190,10 @@ class Inspector extends Component {
         <InspectorColorNumericInput
           tooltip1={t('inspector.tooltips.fill')}
           tooltip2={t('inspector.tooltips.opacity')}
-          val1={this.getSelectionAttribute('fillColor').toCSS()}
+          val1={this.getSelectionAttribute('fillColor')}
           onChange1={(col) => this.setSelectionAttribute('fillColor', col)}
           onChangeIntermediate1={(col) => this.setSelectionAttributeIntermediate('fillColor', col)}
-          
+          enableGradient={true}
           selectionProps={{
             getSelection: () => this.props.project.selection,
             renderSelection: () => this.props.project.view.render(),
@@ -180,12 +211,17 @@ class Inspector extends Component {
         <InspectorColorNumericInput
           tooltip1={t('inspector.tooltips.stroke')}
           tooltip2={t('inspector.tooltips.weight')}
-
-          val1={this.getSelectionAttribute('strokeColor').toCSS()}
+          val1={this.getSelectionAttribute('strokeColor')}
           onChange1={(col) => this.setSelectionAttribute('strokeColor', col)}
+          onChangeIntermediate1={(col) => this.setSelectionAttributeIntermediate('strokeColor', col)}
+          enableGradient={true}
+          selectionProps={{
+            getSelection: () => this.props.project.selection,
+            renderSelection: () => this.props.project.view.render(),
+            targetCanvas: this.props.project.view._svgCanvas
+          }}
           id={"inspector-selection-stroke-color"}
           stroke={true}
-
           val2={this.getSelectionAttribute('strokeWidth')}
           onChange2={(val) => this.setSelectionAttribute('strokeWidth', val)}
           divider={false}

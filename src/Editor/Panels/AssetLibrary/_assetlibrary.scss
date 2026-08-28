@@ -61,6 +61,12 @@ $filter-height: 40px;
   margin-right: 5px;
 }
 
+.btn-asset-gallery {
+  width: $upload-button-height;
+  height: $upload-button-height;
+  margin-left: 5px;
+}
+
 .asset-library-body {
   height: 100%;
   background-color: $editor-tertiary;

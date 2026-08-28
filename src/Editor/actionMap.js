@@ -104,6 +104,13 @@ class ActionMapInterface extends Object {
         id: 'action-edit-timeline',
         color: 'active-green'
       },
+      exportSelectedClip: {
+        icon: 'save',
+        tooltipKey: 'actionMap.exportSelectedClip',
+        action: this.editor.exportSelectedClip,
+        id: 'action-export-selected-clip',
+        color: 'active-green'
+      },
       breakApart: {
         icon: 'breakApart-dark',
         tooltipKey: 'actionMap.breakApart',

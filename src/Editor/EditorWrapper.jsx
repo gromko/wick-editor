@@ -103,6 +103,7 @@ export default function EditorWrapper(props) {
                     builtinPreviews={props.editor.builtinPreviews}
                     addFileToBuiltinPreviews={props.editor.addFileToBuiltinPreviews}
                     isAssetInLibrary={props.editor.isAssetInLibrary}
+                    createAssets={props.editor.createAssets}
                     openProjectFileDialog={props.editor.openProjectFileDialog}
                     openNewProjectConfirmation={props.editor.openNewProjectConfirmation}
                     localSavedFiles={props.editor.state.localSavedFiles}

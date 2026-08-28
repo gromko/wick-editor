@@ -153,10 +153,34 @@
     "title": "Asset Library",
     "addBuiltinAsset": "Add Builtin Asset",
     "uploadAssets": "Upload Assets",
+    "gallery": "Image Gallery",
     "filterAriaLabel": "filter",
     "filterPlaceholder": "filter...",
     "addToFrame": "Add to Frame",
     "addToCanvas": "Add to Canvas"
+  },
+  "gallery": {
+    "title": "Image Gallery",
+    "loading": "Loading...",
+    "loadError": "Failed to load image list.<br>Check your connection or try again later.",
+    "noImages": "No images",
+    "emptyCategory": "No images in this category",
+    "insert": "Insert",
+    "inserting": "Inserting...",
+    "close": "Close",
+    "footer": "Click an image to preview",
+    "tabs": {
+      "images": "Images",
+      "fonts": "Fonts",
+      "sounds": "Sounds",
+      "objects": "Objects"
+    },
+    "noFonts": "No fonts",
+    "noSounds": "No sounds",
+    "noWickobjs": "No objects",
+    "noDescription": "No description available",
+    "fontThumbnailText": "AaBbGgWwZz",
+    "fontPreviewText": "The quick brown fox jumps over the lazy dog"
   },
   "timeline": {
     "ariaLabel": "Timeline"
@@ -258,6 +282,7 @@
     "createGroupFromSelection": "Create Group from Selection (NYI)",
     "editCode": "Edit Code",
     "editTimeline": "Edit Timeline",
+    "exportSelectedClip": "Save Export as wickobj",
     "breakApart": "Break Apart",
     "addTweenToSelection": "Add Tween to Frame (NYI)",
     "makeAnimated": "Make Animated",

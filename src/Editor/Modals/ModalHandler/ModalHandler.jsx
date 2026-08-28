@@ -28,6 +28,7 @@ import GeneralWarning from '../GeneralWarning/GeneralWarning';
 import ExportMedia from '../ExportMedia/ExportMedia';
 import SettingsModal from '../SettingsModal/SettingsModal';
 import BuiltinLibrary from '../BuiltinLibrary/BuiltinLibrary';
+import Gallery from '../Gallery/Gallery';
 import EditorInfo from '../EditorInfo/EditorInfo';
 import OpenSourceNotices from '../OpenSourceNotices/OpenSourceNotices';
 import MobileMenu from '../MobileMenu/MobileMenu';
@@ -131,6 +132,11 @@ class ModalHandler extends Component {
           builtinPreviews={this.props.builtinPreviews}
           addFileToBuiltinPreviews={this.props.addFileToBuiltinPreviews}
           isAssetInLibrary={this.props.isAssetInLibrary}
+        />
+        <Gallery
+          toggle={this.props.closeActiveModal}
+          open={this.props.activeModalName === 'Gallery'}
+          createAssets={this.props.createAssets}
         />
         <EditorInfo
           openModal={this.props.openModal}

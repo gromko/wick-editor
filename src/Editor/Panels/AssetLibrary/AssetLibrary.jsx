@@ -45,6 +45,10 @@ class AssetLibrary extends Component {
     this.props.openModal('BuiltinLibrary');
   }
 
+  openGallery = () => {
+    this.props.openModal('Gallery');
+  }
+
   updateFilter = (text) => {
     this.setState({
       filterText: text,
@@ -115,6 +119,14 @@ class AssetLibrary extends Component {
             id="button-asset-upload"
             icon="upload"
             tooltip={t('assetLibrary.uploadAssets')} />
+        </div>
+        <div className="btn-asset-gallery">
+          <ActionButton
+            color="upload"
+            action={this.openGallery}
+            id="button-asset-gallery"
+            icon="gallery"
+            tooltip={t('assetLibrary.gallery')} />
         </div>
       </div>
     )

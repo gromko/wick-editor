@@ -88,6 +88,9 @@ Wick.Path = class extends Wick.Base {
 
         data.json = this.json;
         delete data.json[1].data;
+        if (typeof data.json[0] !== "string") {
+            delete data.json[1][1].data;
+        }
 
         // optimization: replace dataurls with asset uuids
         if (data.json[0] === 'Raster' && data.json[1].source.startsWith('data:')) {

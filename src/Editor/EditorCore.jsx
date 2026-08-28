@@ -562,8 +562,13 @@ class EditorCore extends Component {
         cancelText: this.props.t('editorCore.warnings.cancel'),
       });
     } else {
-      this.project.deleteSelectedObjects();
-      this.projectDidChange({actionName: "Delete Selected Objects"});
+      if(this.project.selection.useGradientGUI) {
+        this.project.selection.deleteSelectedStop();
+        this.projectDidChange({actionName: "Delete Selected Stop"});
+      } else {
+        this.project.deleteSelectedObjects();
+        this.projectDidChange({actionName: "Delete Selected Objects"});
+      }
     }
   }
 
@@ -855,15 +860,28 @@ class EditorCore extends Component {
    * depending on if the action was successful.
    * @param {File} file - File object to create an asset of.
    * @param {Function} callback - (optional) Callback to return asset to. If the import was unsuccessful, null is sent to the callback.
+   * @param {string} toastID - (optional) ID of an existing "loading" toast to update when the import completes instead of creating a new one.
    */
-  importFileAsAsset = (file, callback) => {
+  importFileAsAsset = (file, callback, toastID) => {
     this.project.importFile(file, (asset) => {
       if (callback) callback(asset);
 
       if(asset === null) {
-        this.toast(this.props.t('editorCore.toasts.couldNotAddFiles', { fileName: file.name }), 'error');
+        if (toastID !== undefined) {
+          this.updateToast(toastID, {
+            type: 'error',
+            text: this.props.t('editorCore.toasts.couldNotAddFiles', { fileName: file.name })});
+        } else {
+          this.toast(this.props.t('editorCore.toasts.couldNotAddFiles', { fileName: file.name }), 'error');
+        }
       } else {
-        this.toast(this.props.t('editorCore.toasts.importedSuccessfully', { name: file.name || this.props.t('editorCore.toasts.defaultProjectName') }));
+        if (toastID !== undefined) {
+          this.updateToast(toastID, {
+            type: 'success',
+            text: this.props.t('editorCore.toasts.importedSuccessfully', { name: file.name || this.props.t('editorCore.toasts.defaultProjectName') })});
+        } else {
+          this.toast(this.props.t('editorCore.toasts.importedSuccessfully', { name: file.name || this.props.t('editorCore.toasts.defaultProjectName') }));
+        }
         this.projectDidChange({ actionName: "Import File As Asset" });
       }
     });
@@ -912,7 +930,7 @@ class EditorCore extends Component {
   createAssets = (acceptedFiles, rejectedFiles, options) => {
     if (!options) options = {};
 
-    let toastID = this.toast(this.props.t('editorCore.toasts.importingFiles'), 'info');
+    let toastID = this.toast(this.props.t('editorCore.toasts.importingFiles'), 'warning', { autoClose: false });
 
     // Error message for failed uploads
     if (rejectedFiles.length > 0) {
@@ -929,8 +947,9 @@ class EditorCore extends Component {
     // Add all successfully uploaded assets
     for(var i = 0; i < acceptedFiles.length; i++) {
       if(acceptedFiles[i].type === 'image/gif') {
+        let gifFile = acceptedFiles[i];
         GIFImport.importGIFIntoProject({
-            gifFile: acceptedFiles[i],
+            gifFile: gifFile,
             project: this.project,
             onProgress: (percent) => {
                 console.log('GIFImport onProgress: ' + percent);
@@ -938,12 +957,15 @@ class EditorCore extends Component {
             onFinish: (gifAsset) => {
                 this.project.addAsset(gifAsset);
                 this.projectDidChange({ actionName: "Add Asset" });
+                this.updateToast(toastID, {
+                  type: 'success',
+                  text: this.props.t('editorCore.toasts.importedSuccessfully', { name: gifFile.name })});
                 if (options.create) this.createImageFromAsset(gifAsset.uuid, options.location.x || 0, options.location.y || 0);
             }});
       } else {
         var file = acceptedFiles[i];
 
-        this.importFileAsAsset(file, createCallback);
+        this.importFileAsAsset(file, createCallback, toastID);
       }
     }
   }

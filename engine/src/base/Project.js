@@ -256,6 +256,18 @@ Wick.Project = class extends Wick.Base {
     }
 
     /**
+     * The preview image data URL (PNG) captured when the project was last saved.
+     * @type {string|null}
+     */
+    get previewImage() {
+        return this._previewImage || null;
+    }
+
+    set previewImage(dataURL) {
+        this._previewImage = dataURL || null;
+    }
+
+    /**
      * The framerate of the project.
      * @type {number}
      */

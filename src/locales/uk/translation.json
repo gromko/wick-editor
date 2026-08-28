@@ -153,10 +153,34 @@
     "title": "Бібліотека ресурсів",
     "addBuiltinAsset": "Додати вбудований ресурс",
     "uploadAssets": "Завантажити файли",
+    "gallery": "Галерея зображень",
     "filterAriaLabel": "фільтр",
     "filterPlaceholder": "фільтр...",
     "addToFrame": "Додати до кадру",
     "addToCanvas": "Додати на полотно"
+  },
+  "gallery": {
+    "title": "Галерея зображень",
+    "loading": "Завантаження...",
+    "loadError": "Не вдалося завантажити список зображень.<br>Перевірте з'єднання або спробуйте пізніше.",
+    "noImages": "Немає зображень",
+    "emptyCategory": "Немає зображень у цій категорії",
+    "insert": "Вставити",
+    "inserting": "Вставлення...",
+    "close": "Закрити",
+    "footer": "Клікніть на зображення для перегляду",
+    "tabs": {
+      "images": "Зображення",
+      "fonts": "Шрифти",
+      "sounds": "Звуки",
+      "objects": "Об'єкти"
+    },
+    "noFonts": "Немає шрифтів",
+    "noSounds": "Немає звуків",
+    "noWickobjs": "Немає об'єктів",
+    "noDescription": "Немає опису",
+    "fontThumbnailText": "AaЄєЖжІіЇїФф",
+    "fontPreviewText": "Щедра ця осінь - немає іншої пори, коли червоніють яблука, жовтіють груші, аґрус, зеленіє фейхоа"
   },
   "timeline": {
     "ariaLabel": "Таймлайн"
@@ -258,6 +282,7 @@
     "createGroupFromSelection": "Створити групу з виділеного (NYI)",
     "editCode": "Редагувати код",
     "editTimeline": "Редагувати таймлайн",
+    "exportSelectedClip": "Зберегти як wickobj",
     "breakApart": "Розділити",
     "addTweenToSelection": "Додати твін до кадру (NYI)",
     "makeAnimated": "Зробити анімованим",
